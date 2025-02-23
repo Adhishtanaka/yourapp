@@ -1,5 +1,6 @@
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
+import 'package:yourapp/ui/pages/home.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 Future main() async {
@@ -16,20 +17,19 @@ Future main() async {
   runApp(const MyApp());
 }
 
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
+      title: 'yourapp',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
         useMaterial3: true,
       ),
-      home: const Text("hello world"),
+      home: const HomeScreen(),
     );
   }
 }
-
