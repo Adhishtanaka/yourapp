@@ -13,156 +13,435 @@ class AIOperations {
 
   Future<String?> getPrompt(String prompt) async {
     final fullPrompt = '''
-    You are a specialized Prompt Generator for software and application development. Your task is to create a structured outline to guide building a new application. Follow these instructions exactly:
+    I am the world's leading expert in system design and software architecture, specializing in creating comprehensive application blueprints. With extensive experience in UI/UX design, accessibility standards, and color theory including Material Design principles, I provide complete, production-ready specifications.
 
-    INPUT:
-    - Application Idea: A brief description of an application the user wants to build.
+    TASK:
+    Generate a detailed application specification based on the user's requirements.
 
-    OUTPUT MUST INCLUDE:
-    1. Core Features: List 3-5 essential features.
-    2. UI/UX Design Concept: Describe the main interface elements including layout and style.
-    3. Example User Flows: Provide 2-3 common scenarios demonstrating how users interact with the app.
+    VALIDATION RULES:
+    - Must be a valid application development request
+    - Must NOT be general programming questions (e.g., "how to center a div")
+    - Must NOT be non-software related queries (e.g., "how to make lasagna")
 
-    RESPONSE FORMAT:
+    EXAMPLE INVALID INPUTS AND RESPONSES:
+    Input: "How do I center a div?"
+    Response: "No"
+
+    Input: "Recipe for pasta"
+    Response: "No"
+
+    EXAMPLE VALID INPUT AND OUTPUT:
+    Input: "Build a task management app for students"
+    Output:
     ===CORE FEATURES===
-    - [Feature 1]
-    - [Feature 2]
-    - [Feature 3]
+    - Task management with deadline tracking and completion status
+    - Subject-based task categorization
+    - Visual progress tracking with percentage indicators
+    - LocalStorage persistence for task data
+    - Simple analytics on task completion rates
 
     ===UI DESIGN===
-    - [Layout description]
-    - [Color scheme]
-    - [Key components]
+    Layout:
+    - Clean, responsive single-page layout
+    - Fixed header with app title
+    - Floating Action Button for task creation
+    - Card-based task list with edit functionality
+    
+    Color Scheme:
+    - Primary: Indigo (#4F46E5)
+    - Secondary: White (#FFFFFF)
+    - Background: Light Gray (#F3F4F6)
+    - Surface: White (#FFFFFF)
+    - Text: Dark Gray (#111827)
+    - Accent: Purple for buttons and interactions
+    
+    Components:
+    - Subject filter pills with active state indicators
+    - Task cards with:
+          - Checkbox for completion
+          - Progress bar
+          - Deadline display
+          - Edit button
+          - Title and subject display
+    - Modal dialog for task creation/editing
+    - Responsive form inputs with validation
+    - Interactive elements with hover states
 
     ===USER FLOWS===
-    1. [User flow 1]
-    2. [User flow 2]
+    1. Task Creation:
+       - Tap FAB → Fill task details → Select subject
+       - Set priority → Add deadline → Confirm (with haptic feedback)
+       - View task in relevant category
 
-    EXAMPLE:
-    ===CORE FEATURES===
-    - Task creation, editing, and deletion
-    - Mark tasks as completed and filter by status
-    - Categorize tasks with labels and priorities
-    
-    ===UI DESIGN===
-    - Clean, minimal interface with a focus on usability
-    - Primary: #2563eb with neutral backgrounds for clarity
-    - Components: Input field for new tasks, a dynamic task list, and filter buttons
-    
-    ===USER FLOWS===
-    1. User enters a new task in the input field and clicks "Add" to see it listed.
-    2. User marks a task as completed and filters to view only pending tasks.
-    3. User edits an existing task by clicking on it, updating the text, and saving the changes.
-
+    2. Task Management:
+       - Click checkbox to complete task
+       - edit button for detailed edit
+       - Click on chips to filter task categories
 
     User's application idea: $prompt
 
-    Response rules:
-    1. Generate content strictly following the structure above.
-    2. Do not include explanations or additional commentary.
-    3. If the input is not a valid application idea, respond with "no".
+    RESPONSE RULES:
+    1. Validate input against rules first
+    2. For invalid inputs, respond only with "no"
+    3. For valid inputs, follow exact format above
+    4. Include only essential, implementable features
+    5. Ensure all UI elements follow Material Design
+    6. Maintain accessibility standards in design
+    7. No explanations or comments in output
+    8. you can decide colors and layout for this application as well.
     ''';
 
     final content = [Content.text(fullPrompt)];
     final response = await model.generateContent(content);
-    if (response.text == 'no') {
+    if (response.text?.trim() == 'No') {
       return null;
     }
-    print(response.text);
     return response.text;
   }
 
   Future<String?> getCode(String prompt) async {
     final fullPrompt = '''
-    You are a specialized SPA Generator for building Single Page Applications using Alpine.js. Generate a complete HTML file scaffold with the following instructions:
+    I am an expert SPA (Single Page Application) architect specializing in creating production-ready, accessible, and performant web applications. With mastery of Alpine.js, Tailwind CSS, and Material Design principles, I deliver complete, ready-to-deploy solutions that perfectly match your specifications.
 
-    REQUIRED DEPENDENCIES:
-    1. Alpine.js: Include via CDN:
-       <script src="//unpkg.com/alpinejs" defer></script>
-    2. Tailwind CSS: Include via CDN:
-       <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    EXAMPLE INPUT :
+    ===CORE FEATURES===
+    - Task management with deadline tracking and completion status
+    - Subject-based task categorization
+    - Visual progress tracking with percentage indicators
+    - LocalStorage persistence for task data
+    - Simple analytics on task completion rates
 
-    OUTPUT STRUCTURE:
-    1. A complete HTML file including the required dependencies.
-    2. A simple SPA structure using Alpine.js for reactivity and state management.
-    3. Implement basic routing by conditionally displaying at least two views (e.g., Home and About).
-    4. Use Tailwind CSS for styling.
-    5. The UI must be mobile-responsive, as this application is intended for mobile use.if you can make it look like material design just using tailwind.
+    ===UI DESIGN===
+    Layout:
+    - Clean, responsive single-page layout
+    - Fixed header with app title
+    - Floating Action Button for task creation
+    - Card-based task list with edit functionality
+    
+    Color Scheme:
+    - Primary: Indigo (#4F46E5)
+    - Secondary: White (#FFFFFF)
+    - Background: Light Gray (#F3F4F6)
+    - Surface: White (#FFFFFF)
+    - Text: Dark Gray (#111827)
+    - Accent: Purple for buttons and interactions
+    
+    Components:
+    - Subject filter pills with active state indicators
+    - Task cards with:
+          - Checkbox for completion
+          - Progress bar
+          - Deadline display
+          - Edit button
+          - Title and subject display
+    - Modal dialog for task creation/editing
+    - Responsive form inputs with validation
+    - Interactive elements with hover states
+    
+    ===USER FLOWS===
+    1. Task Creation:
+       - Tap FAB → Fill task details → Select subject
+       - Set priority → Add deadline → Confirm (with haptic feedback)
+       - View task in relevant category
+
+    2. Task Management:
+       - Click checkbox to complete task
+       - edit button for detailed edit
+       - Click on chips to filter task categories
 
     EXAMPLE OUTPUT:
     <!DOCTYPE html>
-    <html lang="en" x-data="app()">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Todo List SPA</title>
-      <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
-      <script src="//unpkg.com/alpinejs" defer></script>
-    </head>
-    <body class="bg-gray-50">
-      <div class="container mx-auto p-4">
-        <nav class="mb-4">
-          <button class="mr-2 px-4 py-2 bg-blue-600 text-white" @click="currentView = 'todo'">Todo List</button>
-          <button class="px-4 py-2 bg-blue-600 text-white" @click="currentView = 'about'">About</button>
-        </nav>
-        
-        <div x-show="currentView === 'todo'">
-          <h1 class="text-2xl font-bold mb-4">Todo List</h1>
-          <div class="mb-4">
-            <input x-model="newTask" type="text" placeholder="Enter a new task" class="border p-2 w-full">
-            <button @click="addTask()" class="mt-2 px-4 py-2 bg-green-600 text-white">Add Task</button>
-          </div>
-          <ul>
-            <template x-for="(task, index) in tasks" :key="index">
-              <li class="flex justify-between items-center bg-white p-2 mb-2 shadow">
-                <span x-text="task"></span>
-                <button @click="removeTask(index)" class="px-2 py-1 bg-red-500 text-white">Delete</button>
-              </li>
-            </template>
-          </ul>
-        </div>
-        
-        <div x-show="currentView === 'about'">
-          <h1 class="text-2xl font-bold mb-4">About</h1>
-          <p>This is a simple Todo List application built with Alpine.js and styled with Tailwind CSS.</p>
-        </div>
-      </div>
-      
-      <script>
-        function app() {
-          return {
-            currentView: 'todo',
-            newTask: '',
-            tasks: [],
-            addTask() {
-              if (this.newTask.trim() !== '') {
-                this.tasks.push(this.newTask.trim());
-                this.newTask = '';
-              }
-            },
-            removeTask(index) {
-              this.tasks.splice(index, 1);
-            }
-          }
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Task Manager</title>
+    <!-- AlpineJS -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
         }
-      </script>
-    </body>
-    </html>
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div x-data="taskManager()" class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-indigo-600 shadow-lg">
+            <div class="container mx-auto px-4 py-6">
+                <h1 class="text-2xl font-bold text-white">Student Task Manager</h1>
+            </div>
+        </header>
 
-    User's application idea: $prompt
+        <!-- Main Content -->
+        <main class="container mx-auto px-4 py-8">
+            <!-- Task Filters -->
+            <div class="mb-6">
+                <div class="flex space-x-2 overflow-x-auto pb-2">
+                    <button 
+                        @click="selectedSubject = 'All'"
+                        :class="selectedSubject === 'All' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700'"
+                        class="px-4 py-2 rounded-full shadow hover:shadow-md transition">
+                        All
+                    </button>
+                    <template x-for="subject in subjects" :key="subject">
+                        <button 
+                            @click="selectedSubject = subject"
+                            :class="selectedSubject === subject ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700'"
+                            class="px-4 py-2 rounded-full shadow hover:shadow-md transition"
+                            x-text="subject">
+                        </button>
+                    </template>
+                </div>
+            </div>
 
-    Response rules:
-    1. Generate one complete HTML file as described.
-    2. Use Alpine.js for reactivity and state management.
-    3. Use Tailwind CSS for styling.
-    4. Include at least two views/components.
-    5. Do not include any commentary beyond the code.
-    6. If the input is not a valid application idea, respond with "no".
+            <!-- Task List -->
+            <div class="space-y-4">
+                <template x-for="task in filteredTasks" :key="task.id">
+                    <div 
+                        class="bg-white rounded-lg shadow-md p-4 transition-all"
+                        :class="{'opacity-75': task.completed}">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center">
+                                    <input 
+                                        type="checkbox" 
+                                        :checked="task.completed"
+                                        @change="toggleTask(task)"
+                                        class="h-4 w-4 text-indigo-600 rounded">
+                                    <h3 
+                                        class="ml-3 text-lg font-medium"
+                                        :class="{'line-through': task.completed}"
+                                        x-text="task.title">
+                                    </h3>
+                                </div>
+                                <p class="text-gray-600 mt-1" x-text="task.subject"></p>
+                                <div class="flex items-center mt-2">
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div 
+                                            class="bg-indigo-600 h-2 rounded-full transition-all"
+                                            :style="`width: \${task.progress}%`">
+                                        </div>
+                                    </div>
+                                    <span class="ml-2 text-sm text-gray-600" x-text="`\${task.progress}%`"></span>
+                                </div>
+                            </div>
+                            <div class="ml-4 flex flex-col items-end">
+                                <span 
+                                    :class="isUrgent(task) ? 'text-red-500' : 'text-gray-500'"
+                                    x-text="formatDeadline(task.deadline)">
+                                </span>
+                                <button 
+                                    @click="editTask(task)"
+                                    class="mt-2 text-sm text-indigo-600 hover:text-indigo-800">
+                                    Edit
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Empty State -->
+            <div 
+                x-show="filteredTasks.length === 0"
+                class="text-center py-12">
+                <p class="text-gray-500">No tasks found. Add some tasks to get started!</p>
+            </div>
+
+            <!-- Add Task Button -->
+            <button 
+                @click="showTaskModal = true"
+                class="fixed right-6 bottom-6 w-14 h-14 bg-indigo-600 rounded-full shadow-lg flex items-center justify-center text-white hover:bg-indigo-700 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+            </button>
+
+            <!-- Task Modal -->
+            <div 
+                x-show="showTaskModal" 
+                class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+                @click.self="showTaskModal = false">
+                <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                    <h2 class="text-xl font-bold mb-4" x-text="editingTask ? 'Edit Task' : 'Add New Task'"></h2>
+                    <form @submit.prevent="saveTask">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Title</label>
+                                <input 
+                                    type="text" 
+                                    x-model="taskForm.title"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Subject</label>
+                                <select 
+                                    x-model="taskForm.subject"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <template x-for="subject in subjects" :key="subject">
+                                        <option x-text="subject"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Deadline</label>
+                                <input 
+                                    type="datetime-local" 
+                                    x-model="taskForm.deadline"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Progress (%)</label>
+                                <input 
+                                    type="number" 
+                                    x-model="taskForm.progress"
+                                    min="0"
+                                    max="100"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                        <div class="mt-6 flex justify-end space-x-3">
+                            <button 
+                                type="button"
+                                @click="showTaskModal = false"
+                                class="px-4 py-2 text-gray-700 hover:text-gray-900">
+                                Cancel
+                            </button>
+                            <button 
+                                type="submit"
+                                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                                Save
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function taskManager() {
+            return {
+                tasks: [],
+                subjects: ['Math', 'Science', 'English', 'History', 'Programming'],
+                selectedSubject: 'All',
+                showTaskModal: false,
+                editingTask: null,
+                taskForm: {
+                    id: null,
+                    title: '',
+                    subject: 'Math',
+                    deadline: '',
+                    progress: 0,
+                    completed: false
+                },
+
+                init() {
+                    // Load tasks from localStorage
+                    const savedTasks = localStorage.getItem('tasks');
+                    this.tasks = savedTasks ? JSON.parse(savedTasks) : [];
+                },
+
+                get filteredTasks() {
+                    return this.selectedSubject === 'All'
+                        ? this.tasks
+                        : this.tasks.filter(task => task.subject === this.selectedSubject);
+                },
+
+                saveTask() {
+                    if (this.editingTask) {
+                        // Update existing task
+                        const index = this.tasks.findIndex(t => t.id === this.editingTask.id);
+                        if (index !== -1) {
+                            this.tasks[index] = { ...this.taskForm };
+                        }
+                    } else {
+                        // Add new task
+                        this.tasks.push({
+                            ...this.taskForm,
+                            id: Date.now()
+                        });
+                    }
+
+                    // Save to localStorage
+                    localStorage.setItem('tasks', JSON.stringify(this.tasks));
+
+                    // Reset form and close modal
+                    this.resetForm();
+                    this.showTaskModal = false;
+                },
+
+                editTask(task) {
+                    this.editingTask = task;
+                    this.taskForm = { ...task };
+                    this.showTaskModal = true;
+                },
+
+                resetForm() {
+                    this.editingTask = null;
+                    this.taskForm = {
+                        id: null,
+                        title: '',
+                        subject: 'Math',
+                        deadline: '',
+                        progress: 0,
+                        completed: false
+                    };
+                },
+
+                toggleTask(task) {
+                    task.completed = !task.completed;
+                    task.progress = task.completed ? 100 : 0;
+                    localStorage.setItem('tasks', JSON.stringify(this.tasks));
+                },
+
+                formatDeadline(deadline) {
+                    const date = new Date(deadline);
+                    return date.toLocaleString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                },
+
+                isUrgent(task) {
+                    const deadline = new Date(task.deadline);
+                    const now = new Date();
+                    const diff = deadline - now;
+                    return diff < 24 * 60 * 60 * 1000; // Less than 24 hours
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+
+    User's system design specification: $prompt
+
+    RESPONSE RULES:
+    1. Generate complete, production-ready HTML/Alpine.js/Tailwind code
+    2. Implement all core features from the system design
+    3. Follow Material Design principles using Tailwind classes
+    4. Include all required functionality (no TODO comments)
+    5. Ensure mobile-first responsive design
+    6. Add confirmation dialogs for critical actions
+    7. Implement proper error handling
+    8. Include smooth animations and transitions
+    9. You can add any library using cdn link adding to html code
+    10. Use good coding practice
+    11. also you can use any browser api.
     ''';
 
     final content = [Content.text(fullPrompt)];
     final response = await model.generateContent(content);
-    print(response.text);
     return response.text;
   }
 }
