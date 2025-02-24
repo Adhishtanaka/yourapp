@@ -41,7 +41,8 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Icon(Icons.circle_outlined, size: 19, color: Colors.grey[600]),
             const SizedBox(width: 8),
-            Text("yourapp", style: TextStyle(color: Colors.grey[600], fontSize: 17)),
+            Text("yourapp",
+                style: TextStyle(color: Colors.grey[600], fontSize: 17)),
           ],
         ),
       ),
@@ -73,7 +74,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Icon(Icons.person_outline, size: 18, color: Colors.grey[600]),
+                      Icon(Icons.person_outline,
+                          size: 18, color: Colors.grey[600]),
                       const SizedBox(width: 6),
                       Expanded(
                         child: TextField(
@@ -81,31 +83,39 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: const TextStyle(fontSize: 15),
                           decoration: InputDecoration(
                             hintText: 'Type Your Prompt..',
-                            hintStyle: TextStyle(color: Colors.grey[600], fontSize: 15),
+                            hintStyle: TextStyle(
+                                color: Colors.grey[600], fontSize: 15),
                             border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                            contentPadding:
+                                const EdgeInsets.symmetric(vertical: 8),
                             isDense: true,
                           ),
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.chat_bubble_outline, color: Colors.grey[600], size: 18),
+                        icon: Icon(Icons.chat_bubble_outline,
+                            color: Colors.grey[600], size: 18),
                         onPressed: () async {
                           if (controller.text.isNotEmpty) {
-                            final finalPrompt = await gemini.getPrompt(controller.text);
+                            final finalPrompt =
+                                await gemini.getPrompt(controller.text);
                             if (finalPrompt == null) {
                               _showErrorDialog("You used a wrong prompt.");
                               return;
+                            } else {
+                              final htmlCode =
+                                  await gemini.getCode(finalPrompt);
+                              if (htmlCode == null) {
+                                _showErrorDialog("Failed to generate code.");
+                                return;
+                              }
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        BrowserUI(html: htmlCode)),
+                              );
                             }
-                            final htmlCode = await gemini.getCode(finalPrompt);
-                            if (htmlCode == null) {
-                              _showErrorDialog("Failed to generate code.");
-                              return;
-                            }
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => BrowserUI(html: htmlCode)),
-                            );
                           }
                         },
                       )
