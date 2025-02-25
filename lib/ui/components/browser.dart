@@ -13,10 +13,10 @@ class BrowserUI extends StatefulWidget {
 class _BrowserUIState extends State<BrowserUI> {
   InAppWebViewController? webViewController;
   late PullToRefreshController pullToRefreshController;
+  bool isLoading = true;
 
   String cleanHtml(String html) {
-    String cleaned = html.replaceAll('```html', '').replaceAll('```', '').trim();
-    return cleaned;
+    return html.replaceAll('```html', '').replaceAll('```', '').trim();
   }
 
   @override
@@ -32,18 +32,37 @@ class _BrowserUIState extends State<BrowserUI> {
 
   @override
   Widget build(BuildContext context) {
-    return InAppWebView(
-      initialData: InAppWebViewInitialData(
-        data: cleanHtml(widget.html),
-        baseUrl: WebUri('https://localhost'),
+    return Scaffold(
+      backgroundColor: Colors.white, // Prevents black screen issue
+      body: Stack(
+        children: [
+          InAppWebView(
+            initialData: InAppWebViewInitialData(
+              data: cleanHtml(widget.html),
+              baseUrl: WebUri('https://localhost'),
+            ),
+            pullToRefreshController: pullToRefreshController,
+            onWebViewCreated: (controller) {
+              webViewController = controller;
+            },
+            onLoadStart: (controller, url) {
+              setState(() {
+                isLoading = true;
+              });
+            },
+            onLoadStop: (controller, url) {
+              setState(() {
+                isLoading = false;
+              });
+              pullToRefreshController.endRefreshing();
+            },
+          ),
+          if (isLoading)
+            Center(
+              child: CircularProgressIndicator(),
+            ),
+        ],
       ),
-      pullToRefreshController: pullToRefreshController,
-      onWebViewCreated: (controller) {
-        webViewController = controller;
-      },
-      onLoadStop: (controller, url) {
-        pullToRefreshController.endRefreshing();
-      },
     );
   }
 }

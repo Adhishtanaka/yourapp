@@ -12,9 +12,19 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   TextEditingController controller = TextEditingController();
-  final gemini = AIOperations(apiKey: '');
+  final gemini = AIOperations(apiKey: 'AIzaSyC-2Fi_XLqPSzLTBr71gGbsxC56kOp4Qlg');
+  double progress = 0.0;
+  bool isLoading = false;
 
-  void _showErrorDialog(String message) {
+  @override
+  void initState() {
+    super.initState();
+    controller.addListener(() {
+      setState(() {});
+    });
+  }
+
+  void showErrorDialog(String message) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -30,6 +40,45 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> handleSubmit() async {
+
+    if (controller.text.isEmpty) return;
+
+    setState(() {
+      isLoading = true;
+      progress = 0.0;
+    });
+
+    final finalPrompt = await gemini.getPrompt(controller.text);
+    setState(() {
+      progress = 0.5;
+    });
+
+    if (finalPrompt == null) {
+      showErrorDialog("You used a wrong prompt.");
+      setState(() {
+        isLoading = false;
+        progress = 0.0;
+      });
+      return;
+    }
+
+    final htmlCode = await gemini.getCode(finalPrompt);
+    setState(() {
+      progress = 1.0;
+    });
+
+    controller.clear();
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => BrowserUI(html: htmlCode!)),
+    );
+    setState(() {
+      isLoading = false;
+      progress = 0.0;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,20 +90,22 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Icon(Icons.circle_outlined, size: 19, color: Colors.grey[600]),
             const SizedBox(width: 8),
-            Text("yourapp",
-                style: TextStyle(color: Colors.grey[600], fontSize: 17)),
+            Text("yourapp", style: TextStyle(color: Colors.grey[600], fontSize: 17)),
           ],
         ),
       ),
       body: SafeArea(
         child: Column(
           children: [
-            const Expanded(
+            Expanded(
               child: Center(
-                child: CircularProgressIndicator(
+                child: isLoading
+                    ? CircularProgressIndicator(
+                  value: progress,
                   color: Colors.black,
                   strokeWidth: 2,
-                ),
+                )
+                    : const SizedBox.shrink(),
               ),
             ),
             Container(
@@ -74,8 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Icon(Icons.person_outline,
-                          size: 18, color: Colors.grey[600]),
+                      Icon(Icons.person_outline, size: 18, color: Colors.grey[600]),
                       const SizedBox(width: 6),
                       Expanded(
                         child: TextField(
@@ -83,41 +133,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: const TextStyle(fontSize: 15),
                           decoration: InputDecoration(
                             hintText: 'Type Your Prompt..',
-                            hintStyle: TextStyle(
-                                color: Colors.grey[600], fontSize: 15),
+                            hintStyle: TextStyle(color: Colors.grey[600], fontSize: 15),
                             border: InputBorder.none,
-                            contentPadding:
-                                const EdgeInsets.symmetric(vertical: 8),
+                            contentPadding: const EdgeInsets.symmetric(vertical: 8),
                             isDense: true,
                           ),
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.chat_bubble_outline,
-                            color: Colors.grey[600], size: 18),
-                        onPressed: () async {
-                          if (controller.text.isNotEmpty) {
-                            final finalPrompt =
-                                await gemini.getPrompt(controller.text);
-                            if (finalPrompt == null) {
-                              _showErrorDialog("You used a wrong prompt.");
-                              return;
-                            } else {
-                              final htmlCode =
-                                  await gemini.getCode(finalPrompt);
-                              if (htmlCode == null) {
-                                _showErrorDialog("Failed to generate code.");
-                                return;
-                              }
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        BrowserUI(html: htmlCode)),
-                              );
-                            }
-                          }
-                        },
+                        icon: Icon(Icons.chat_bubble_outline, color: Colors.grey[600], size: 18),
+                        onPressed: controller.text.isEmpty || isLoading ? null : handleSubmit,
+                        color: controller.text.isEmpty ? Colors.grey[400] : Colors.grey[600],
                       )
                     ],
                   ),
