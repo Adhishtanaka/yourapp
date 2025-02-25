@@ -38,7 +38,6 @@ class AIOperations {
     - Subject-based task categorization
     - Visual progress tracking with percentage indicators
     - LocalStorage persistence for task data
-    - Simple analytics on task completion rates
 
     ===UI DESIGN===
     Layout:
@@ -49,9 +48,8 @@ class AIOperations {
     
     Color Scheme:
     - Primary: Indigo (#4F46E5)
-    - Secondary: White (#FFFFFF)
-    - Background: Light Gray (#F3F4F6)
-    - Surface: White (#FFFFFF)
+    - Secondary: Light Gray (#F3F4F6)
+    - Background: White (#FFFFFF)
     - Text: Dark Gray (#111827)
     - Accent: Purple for buttons and interactions
     
@@ -101,7 +99,7 @@ class AIOperations {
 
   Future<String?> getCode(String prompt) async {
     final fullPrompt = '''
-    I am an expert SPA (Single Page Application) architect specializing in creating production-ready, accessible, and performant web applications. With mastery of Alpine.js, Tailwind CSS, and Material Design principles, I deliver complete, ready-to-deploy solutions that perfectly match your specifications.
+    I am an expert SPA (Single Page Application) architect specializing in creating production-ready, accessible, and performant web mobile responsive applications. With mastery of React, Tailwind CSS, and Material Design principles, I deliver complete, ready-to-deploy solutions that perfectly match your specifications.
 
     EXAMPLE INPUT :
     ===CORE FEATURES===
@@ -120,9 +118,8 @@ class AIOperations {
     
     Color Scheme:
     - Primary: Indigo (#4F46E5)
-    - Secondary: White (#FFFFFF)
-    - Background: Light Gray (#F3F4F6)
-    - Surface: White (#FFFFFF)
+    - Secondary: Light Gray (#F3F4F6)
+    - Background: White (#FFFFFF)
     - Text: Dark Gray (#111827)
     - Accent: Purple for buttons and interactions
     
@@ -150,284 +147,392 @@ class AIOperations {
        - Click on chips to filter task categories
 
     EXAMPLE OUTPUT:
-    <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Task Manager</title>
-    <!-- AlpineJS -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body {
+   <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Student Task Manager</title>
+        <!-- Tailwind CSS -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <!-- Google Fonts -->
+        <link
+          href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
             font-family: 'Roboto', sans-serif;
-        }
-    </style>
-</head>
-<body class="bg-gray-100">
-    <div x-data="taskManager()" class="min-h-screen">
-        <!-- Header -->
-        <header class="bg-indigo-600 shadow-lg">
-            <div class="container mx-auto px-4 py-6">
-                <h1 class="text-2xl font-bold text-white">Student Task Manager</h1>
-            </div>
-        </header>
-
-        <!-- Main Content -->
-        <main class="container mx-auto px-4 py-8">
-            <!-- Task Filters -->
-            <div class="mb-6">
-                <div class="flex space-x-2 overflow-x-auto pb-2">
-                    <button 
-                        @click="selectedSubject = 'All'"
-                        :class="selectedSubject === 'All' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700'"
-                        class="px-4 py-2 rounded-full shadow hover:shadow-md transition">
-                        All
-                    </button>
-                    <template x-for="subject in subjects" :key="subject">
-                        <button 
-                            @click="selectedSubject = subject"
-                            :class="selectedSubject === subject ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700'"
-                            class="px-4 py-2 rounded-full shadow hover:shadow-md transition"
-                            x-text="subject">
-                        </button>
-                    </template>
-                </div>
-            </div>
-
-            <!-- Task List -->
-            <div class="space-y-4">
-                <template x-for="task in filteredTasks" :key="task.id">
-                    <div 
-                        class="bg-white rounded-lg shadow-md p-4 transition-all"
-                        :class="{'opacity-75': task.completed}">
-                        <div class="flex items-center justify-between">
-                            <div class="flex-1">
-                                <div class="flex items-center">
-                                    <input 
-                                        type="checkbox" 
-                                        :checked="task.completed"
-                                        @change="toggleTask(task)"
-                                        class="h-4 w-4 text-indigo-600 rounded">
-                                    <h3 
-                                        class="ml-3 text-lg font-medium"
-                                        :class="{'line-through': task.completed}"
-                                        x-text="task.title">
-                                    </h3>
-                                </div>
-                                <p class="text-gray-600 mt-1" x-text="task.subject"></p>
-                                <div class="flex items-center mt-2">
-                                    <div class="w-full bg-gray-200 rounded-full h-2">
-                                        <div 
-                                            class="bg-indigo-600 h-2 rounded-full transition-all"
-                                            :style="`width: \${task.progress}%`">
-                                        </div>
-                                    </div>
-                                    <span class="ml-2 text-sm text-gray-600" x-text="`\${task.progress}%`"></span>
-                                </div>
-                            </div>
-                            <div class="ml-4 flex flex-col items-end">
-                                <span 
-                                    :class="isUrgent(task) ? 'text-red-500' : 'text-gray-500'"
-                                    x-text="formatDeadline(task.deadline)">
-                                </span>
-                                <button 
-                                    @click="editTask(task)"
-                                    class="mt-2 text-sm text-indigo-600 hover:text-indigo-800">
-                                    Edit
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-            </div>
-
-            <!-- Empty State -->
-            <div 
-                x-show="filteredTasks.length === 0"
-                class="text-center py-12">
-                <p class="text-gray-500">No tasks found. Add some tasks to get started!</p>
-            </div>
-
-            <!-- Add Task Button -->
-            <button 
-                @click="showTaskModal = true"
-                class="fixed right-6 bottom-6 w-14 h-14 bg-indigo-600 rounded-full shadow-lg flex items-center justify-center text-white hover:bg-indigo-700 transition">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                </svg>
-            </button>
-
-            <!-- Task Modal -->
-            <div 
-                x-show="showTaskModal" 
-                class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
-                @click.self="showTaskModal = false">
-                <div class="bg-white rounded-lg p-6 w-full max-w-md">
-                    <h2 class="text-xl font-bold mb-4" x-text="editingTask ? 'Edit Task' : 'Add New Task'"></h2>
-                    <form @submit.prevent="saveTask">
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Title</label>
-                                <input 
-                                    type="text" 
-                                    x-model="taskForm.title"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    required>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Subject</label>
-                                <select 
-                                    x-model="taskForm.subject"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                    <template x-for="subject in subjects" :key="subject">
-                                        <option x-text="subject"></option>
-                                    </template>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Deadline</label>
-                                <input 
-                                    type="datetime-local" 
-                                    x-model="taskForm.deadline"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    required>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Progress (%)</label>
-                                <input 
-                                    type="number" 
-                                    x-model="taskForm.progress"
-                                    min="0"
-                                    max="100"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            </div>
-                        </div>
-                        <div class="mt-6 flex justify-end space-x-3">
-                            <button 
-                                type="button"
-                                @click="showTaskModal = false"
-                                class="px-4 py-2 text-gray-700 hover:text-gray-900">
-                                Cancel
-                            </button>
-                            <button 
-                                type="submit"
-                                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                                Save
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <script>
-        function taskManager() {
-            return {
-                tasks: [],
-                subjects: ['Math', 'Science', 'English', 'History', 'Programming'],
-                selectedSubject: 'All',
-                showTaskModal: false,
-                editingTask: null,
-                taskForm: {
-                    id: null,
-                    title: '',
-                    subject: 'Math',
-                    deadline: '',
-                    progress: 0,
-                    completed: false
-                },
-
-                init() {
-                    // Load tasks from localStorage
-                    const savedTasks = localStorage.getItem('tasks');
-                    this.tasks = savedTasks ? JSON.parse(savedTasks) : [];
-                },
-
-                get filteredTasks() {
-                    return this.selectedSubject === 'All'
-                        ? this.tasks
-                        : this.tasks.filter(task => task.subject === this.selectedSubject);
-                },
-
-                saveTask() {
-                    if (this.editingTask) {
-                        // Update existing task
-                        const index = this.tasks.findIndex(t => t.id === this.editingTask.id);
-                        if (index !== -1) {
-                            this.tasks[index] = { ...this.taskForm };
-                        }
-                    } else {
-                        // Add new task
-                        this.tasks.push({
-                            ...this.taskForm,
-                            id: Date.now()
-                        });
-                    }
-
-                    // Save to localStorage
-                    localStorage.setItem('tasks', JSON.stringify(this.tasks));
-
-                    // Reset form and close modal
-                    this.resetForm();
-                    this.showTaskModal = false;
-                },
-
-                editTask(task) {
-                    this.editingTask = task;
-                    this.taskForm = { ...task };
-                    this.showTaskModal = true;
-                },
-
-                resetForm() {
-                    this.editingTask = null;
-                    this.taskForm = {
-                        id: null,
-                        title: '',
-                        subject: 'Math',
-                        deadline: '',
-                        progress: 0,
-                        completed: false
-                    };
-                },
-
-                toggleTask(task) {
-                    task.completed = !task.completed;
-                    task.progress = task.completed ? 100 : 0;
-                    localStorage.setItem('tasks', JSON.stringify(this.tasks));
-                },
-
-                formatDeadline(deadline) {
-                    const date = new Date(deadline);
-                    return date.toLocaleString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
-                },
-
-                isUrgent(task) {
-                    const deadline = new Date(task.deadline);
-                    const now = new Date();
-                    const diff = deadline - now;
-                    return diff < 24 * 60 * 60 * 1000; // Less than 24 hours
+          }
+        </style>
+      </head>
+      <body class="bg-gray-100">
+        <div id="root"></div>
+    
+        <!-- React and ReactDOM via CDN -->
+        <script
+          crossorigin
+          src="https://unpkg.com/react@17/umd/react.development.js"
+        ></script>
+        <script
+          crossorigin
+          src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"
+        ></script>
+        <!-- Babel CDN for JSX support -->
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+        <!-- React Code -->
+        <script type="text/babel">
+          const { useState, useEffect, useMemo } = React;
+    
+          function TaskManager() {
+            const [tasks, setTasks] = useState([]);
+            const subjects = ['Math', 'Science', 'English', 'History', 'Programming'];
+            const [selectedSubject, setSelectedSubject] = useState('All');
+            const [showTaskModal, setShowTaskModal] = useState(false);
+            const [editingTask, setEditingTask] = useState(null);
+            const [taskForm, setTaskForm] = useState({
+              id: null,
+              title: '',
+              subject: 'Math',
+              deadline: '',
+              progress: 0,
+              completed: false,
+            });
+    
+            // Load tasks from localStorage on mount
+            useEffect(() => {
+              const savedTasks = localStorage.getItem('tasks');
+              if (savedTasks) {
+                setTasks(JSON.parse(savedTasks));
+              }
+            }, []);
+    
+            // Update localStorage when tasks change
+            useEffect(() => {
+              localStorage.setItem('tasks', JSON.stringify(tasks));
+            }, [tasks]);
+    
+            const filteredTasks = useMemo(() => {
+              return selectedSubject === 'All'
+                ? tasks
+                : tasks.filter((task) => task.subject === selectedSubject);
+            }, [tasks, selectedSubject]);
+    
+            const saveTask = (e) => {
+              e.preventDefault();
+              if (editingTask) {
+                // Update existing task
+                const updatedTasks = tasks.map((t) =>
+                  t.id === editingTask.id ? { ...taskForm } : t
+                );
+                setTasks(updatedTasks);
+              } else {
+                // Add new task
+                setTasks([...tasks, { ...taskForm, id: Date.now() }]);
+              }
+              resetForm();
+              setShowTaskModal(false);
+            };
+    
+            const editTask = (task) => {
+              setEditingTask(task);
+              setTaskForm({ ...task });
+              setShowTaskModal(true);
+            };
+    
+            const resetForm = () => {
+              setEditingTask(null);
+              setTaskForm({
+                id: null,
+                title: '',
+                subject: 'Math',
+                deadline: '',
+                progress: 0,
+                completed: false,
+              });
+            };
+    
+            const toggleTask = (task) => {
+              const updatedTasks = tasks.map((t) => {
+                if (t.id === task.id) {
+                  return {
+                    ...t,
+                    completed: !t.completed,
+                    progress: !t.completed ? 100 : 0,
+                  };
                 }
-            }
-        }
-    </script>
-</body>
-</html>
+                return t;
+              });
+              setTasks(updatedTasks);
+            };
+    
+            const formatDeadline = (deadline) => {
+              const date = new Date(deadline);
+              return date.toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              });
+            };
+    
+            const isUrgent = (task) => {
+              const deadline = new Date(task.deadline);
+              const now = new Date();
+              const diff = deadline - now;
+              return diff < 24 * 60 * 60 * 1000; // Less than 24 hours
+            };
+    
+            return (
+              <div className="min-h-screen">
+                {/* Header */}
+                <header className="bg-indigo-600 shadow-lg">
+                  <div className="container mx-auto px-4 py-6">
+                    <h1 className="text-2xl font-bold text-white">
+                      Student Task Manager
+                    </h1>
+                  </div>
+                </header>
+    
+                {/* Main Content */}
+                <main className="container mx-auto px-4 py-8">
+                  {/* Task Filters */}
+                  <div className="mb-6">
+                    <div className="flex space-x-2 overflow-x-auto pb-2">
+                      <button
+                        onClick={() => setSelectedSubject('All')}
+                        className={`px-4 py-2 rounded-full shadow hover:shadow-md transition \${
+            selectedSubject === 'All'
+        ? 'bg-indigo-600 text-white'
+            : 'bg-white text-gray-700'
+        }`}
+                      >
+                        All
+                      </button>
+                      {subjects.map((subject) => (
+                        <button
+                          key={subject}
+                          onClick={() => setSelectedSubject(subject)}
+                          className={`px-4 py-2 rounded-full shadow hover:shadow-md transition \${
+        selectedSubject === subject
+        ? 'bg-indigo-600 text-white'
+            : 'bg-white text-gray-700'
+        }`}
+                        >
+                          {subject}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+    
+                  {/* Task List */}
+                  <div className="space-y-4">
+                    {filteredTasks.map((task) => (
+                      <div
+                        key={task.id}
+                        className={`bg-white rounded-lg shadow-md p-4 transition-all \${
+        task.completed ? 'opacity-75' : ''
+        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={task.completed}
+                                onChange={() => toggleTask(task)}
+                                className="h-4 w-4 text-indigo-600 rounded"
+                              />
+                              <h3
+                                className={`ml-3 text-lg font-medium \${
+        task.completed ? 'line-through' : ''
+        }`}
+                              >
+                                {task.title}
+                              </h3>
+                            </div>
+                            <p className="text-gray-600 mt-1">{task.subject}</p>
+                            <div className="flex items-center mt-2">
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div
+                                  className="bg-indigo-600 h-2 rounded-full transition-all"
+                                  style={{ width:`\${task.progress}%` }}
+                                ></div>
+                              </div>
+                              <span className="ml-2 text-sm text-gray-600">
+                                {task.progress}%
+                              </span>
+                            </div>
+                          </div>
+                          <div className="ml-4 flex flex-col items-end">
+                            <span
+                              className={
+                                isUrgent(task) ? 'text-red-500' : 'text-gray-500'
+                              }
+                            >
+                              {formatDeadline(task.deadline)}
+                            </span>
+                            <button
+                              onClick={() => editTask(task)}
+                              className="mt-2 text-sm text-indigo-600 hover:text-indigo-800"
+                            >
+                              Edit
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+    
+                  {/* Empty State */}
+                  {filteredTasks.length === 0 && (
+                    <div className="text-center py-12">
+                      <p className="text-gray-500">
+                        No tasks found. Add some tasks to get started!
+                      </p>
+                    </div>
+                  )}
+    
+                  {/* Add Task Button */}
+                  <button
+                    onClick={() => setShowTaskModal(true)}
+                    className="fixed right-6 bottom-6 w-14 h-14 bg-indigo-600 rounded-full shadow-lg flex items-center justify-center text-white hover:bg-indigo-700 transition"
+                  >
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M12 4v16m8-8H4"
+                      />
+                    </svg>
+                  </button>
+    
+                  {/* Task Modal */}
+                  {showTaskModal && (
+                    <div
+                      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+                      onClick={() => setShowTaskModal(false)}
+                    >
+                      <div
+                        className="bg-white rounded-lg p-6 w-full max-w-md"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <h2 className="text-xl font-bold mb-4">
+                          {editingTask ? 'Edit Task' : 'Add New Task'}
+                        </h2>
+                        <form onSubmit={saveTask}>
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700">
+                                Title
+                              </label>
+                              <input
+                                type="text"
+                                value={taskForm.title}
+                                onChange={(e) =>
+                                  setTaskForm({ ...taskForm, title: e.target.value })
+                                }
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700">
+                                Subject
+                              </label>
+                              <select
+                                value={taskForm.subject}
+                                onChange={(e) =>
+                                  setTaskForm({
+                                    ...taskForm,
+                                    subject: e.target.value,
+                                  })
+                                }
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                              >
+                                {subjects.map((subject) => (
+                                  <option key={subject} value={subject}>
+                                    {subject}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700">
+                                Deadline
+                              </label>
+                              <input
+                                type="datetime-local"
+                                value={taskForm.deadline}
+                                onChange={(e) =>
+                                  setTaskForm({
+                                    ...taskForm,
+                                    deadline: e.target.value,
+                                  })
+                                }
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700">
+                                Progress (%)
+                              </label>
+                              <input
+                                type="number"
+                                value={taskForm.progress}
+                                onChange={(e) =>
+                                  setTaskForm({
+                                    ...taskForm,
+                                    progress: parseInt(e.target.value) || 0,
+                                  })
+                                }
+                                min="0"
+                                max="100"
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                              />
+                            </div>
+                          </div>
+                          <div className="mt-6 flex justify-end space-x-3">
+                            <button
+                              type="button"
+                              onClick={() => setShowTaskModal(false)}
+                              className="px-4 py-2 text-gray-700 hover:text-gray-900"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="submit"
+                              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                            >
+                              Save
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  )}
+                </main>
+              </div>
+            );
+          }
+    
+          ReactDOM.render(<TaskManager />, document.getElementById('root'));
+        </script>
+      </body>
+    </html>
 
     User's system design specification: $prompt
 
     RESPONSE RULES:
-    1. Generate complete, production-ready HTML/Alpine.js/Tailwind code
+    1. Generate complete, production-ready HTML/React.js/Tailwind code
     2. Implement all core features from the system design
     3. Follow Material Design principles using Tailwind classes
     4. Include all required functionality (no TODO comments)
