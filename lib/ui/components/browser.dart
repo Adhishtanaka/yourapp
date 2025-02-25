@@ -33,10 +33,14 @@ class _BrowserUIState extends State<BrowserUI> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Prevents black screen issue
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           InAppWebView(
+            initialSettings: InAppWebViewSettings(
+              iframeAllowFullscreen: true,
+              allowsInlineMediaPlayback: true
+            ) ,
             initialData: InAppWebViewInitialData(
               data: cleanHtml(widget.html),
               baseUrl: WebUri('https://localhost'),
