@@ -1,20 +1,15 @@
-import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:yourapp/ui/pages/home.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart';
+
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try {
-    //firebase configuration
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-  } catch (e) {
-    throw Exception('Error $e');
-  }
-
-  runApp(const MyApp());
+  runApp(
+    Phoenix(
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
