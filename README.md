@@ -3,6 +3,9 @@
 ## Overview
 YourApp is an AI-powered **mobile IDE and application builder** that allows users to generate fully functional apps within the same app. Instead of searching through app stores for solutions that may lack customization, updates, or essential features, users can create their own tailored applications using a simple prompt-based system. **This is not a one-click app-building solution but more like an AI-based mobile IDE, providing a workspace for generating and refining applications.**
 
+<img src="rss2.gif" alt="YourApp" width="300">
+
+
 ## Approach
 
 1. **AI-Assisted Code Generation**  
