@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:yourapp/ui/pages/browser.dart';
 import 'package:yourapp/utils/ai_operations.dart';
-import 'package:yourapp/ui/components/browser.dart';
+import 'package:yourapp/ui/components/savedWidget.dart';
+import 'package:yourapp/ui/components/alertDialogWidget.dart';
 
 class HomeComponent extends StatefulWidget {
   const HomeComponent({super.key});
@@ -11,9 +13,17 @@ class HomeComponent extends StatefulWidget {
 
 class _HomeComponentState extends State<HomeComponent> {
   TextEditingController controller = TextEditingController();
-  final gemini = AIOperations(apiKey: 'AIzaSyC-2Fi_XLqPSzLTBr71gGbsxC56kOp4Qlg');
+
+  final gemini = AIOperations();
   double progress = 0.0;
   bool isLoading = false;
+  String loadingMessage = "Processing your request...";
+
+  final List<String> loadingMessages = [
+    "Analyzing prompt...",
+    "Generating content...",
+    "Almost done...",
+  ];
 
   @override
   void initState() {
@@ -23,20 +33,14 @@ class _HomeComponentState extends State<HomeComponent> {
     });
   }
 
-  void showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Error"),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("OK"),
-          ),
-        ],
-      ),
-    );
+  void updateLoadingMessage() {
+    if (progress < 0.25) {
+      loadingMessage = loadingMessages[0];
+    } else if (progress < 0.5) {
+      loadingMessage = loadingMessages[1];
+    } else {
+      loadingMessage = loadingMessages[2];
+    }
   }
 
   Future<void> handleSubmit() async {
@@ -44,16 +48,18 @@ class _HomeComponentState extends State<HomeComponent> {
 
     setState(() {
       isLoading = true;
-      progress = 0.0;
+      progress = 0.1;
+      updateLoadingMessage();
     });
 
     final finalPrompt = await gemini.getPrompt(controller.text);
     setState(() {
       progress = 0.5;
+      updateLoadingMessage();
     });
 
     if (finalPrompt == null) {
-      showErrorDialog("You used a wrong prompt.");
+      showErrorDialog(context, "You used a wrong prompt.");
       setState(() {
         isLoading = false;
         progress = 0.0;
@@ -61,16 +67,27 @@ class _HomeComponentState extends State<HomeComponent> {
       return;
     }
 
+    setState(() {
+      progress = 0.75;
+      updateLoadingMessage();
+    });
+
     final htmlCode = await gemini.getCode(finalPrompt);
     setState(() {
       progress = 1.0;
+      updateLoadingMessage();
     });
 
-    controller.clear();
+    String prompt = controller.text;
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => BrowserUI(html: htmlCode!)),
+      MaterialPageRoute(
+          builder: (context) => BrowserUI(
+            html: htmlCode!,
+            bottomWidget: SavedWidget(prompt: prompt, html: htmlCode),
+          )),
     );
+    controller.clear();
     setState(() {
       isLoading = false;
       progress = 0.0;
@@ -84,13 +101,17 @@ class _HomeComponentState extends State<HomeComponent> {
         children: [
           Expanded(
             child: Center(
-              child: isLoading
-                  ? CircularProgressIndicator(
-                value: progress,
-                color: Colors.black,
-                strokeWidth: 2,
-              )
-                  : const SizedBox.shrink(),
+                child: isLoading
+                    ? LoadingUI()
+                    : const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.android, size: 35),
+                        Text("What can I help with?"),
+                      ],
+                    )
+                )
             ),
           ),
           Container(
@@ -108,10 +129,8 @@ class _HomeComponentState extends State<HomeComponent> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(Icons.person_outline, size: 18, color: Colors.grey[600]),
-                    const SizedBox(width: 6),
                     Expanded(
                       child: TextField(
                         controller: controller,
@@ -126,10 +145,11 @@ class _HomeComponentState extends State<HomeComponent> {
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.chat_bubble_outline, color: Colors.grey[600], size: 18),
+                      icon: Icon(Icons.send_rounded,
+                          color: controller.text.isEmpty ? Colors.grey[400] : Colors.grey[600],
+                          size: 18),
                       onPressed: controller.text.isEmpty || isLoading ? null : handleSubmit,
-                      color: controller.text.isEmpty ? Colors.grey[400] : Colors.grey[600],
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -138,6 +158,47 @@ class _HomeComponentState extends State<HomeComponent> {
           const SizedBox(height: 10),
         ],
       ),
+    );
+  }
+
+  Widget LoadingUI() {
+    int percentage = (progress * 100).round();
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            SizedBox(
+              height: 100,
+              width: 100,
+              child: CircularProgressIndicator(
+                value: progress,
+                color: Colors.black38,
+                backgroundColor: Colors.grey[300],
+                strokeWidth: 5,
+              ),
+            ),
+            Text(
+              "$percentage%",
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        Text(
+          loadingMessage,
+          style: const TextStyle(
+            fontSize: 16,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 20),
+
+      ],
     );
   }
 }
