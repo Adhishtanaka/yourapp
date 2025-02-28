@@ -1,14 +1,26 @@
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AIOperations {
   late String apiKey;
   late final GenerativeModel model;
+  final FlutterSecureStorage _storage = FlutterSecureStorage();
 
-  AIOperations({this.apiKey = ''}) {
-    model = GenerativeModel(
-      model: 'gemini-2.0-flash-exp',
-      apiKey: apiKey,
-    );
+  AIOperations() {
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    String? key = await _storage.read(key: "api_key");
+    if (key != null) {
+      apiKey = key;
+      model = GenerativeModel(
+        model: 'gemini-2.0-flash-exp',
+        apiKey: apiKey,
+      );
+    } else {
+      throw Exception("API key not found!");
+    }
   }
 
   Future<String?> getPrompt(String prompt) async {
@@ -87,6 +99,7 @@ class AIOperations {
     6. Maintain accessibility standards in design
     7. No explanations or comments in output
     8. you can decide colors and layout for this application as well.
+    9. Prevent UI clutter by limiting app bar elements.
     ''';
 
     final content = [Content.text(fullPrompt)];
@@ -536,7 +549,7 @@ class AIOperations {
     2. Implement all core features from the system design
     3. Follow Material Design principles using Tailwind classes
     4. Include all required functionality (no TODO comments)
-    5. Ensure mobile-first responsive design
+    5. Ensure mobile-first responsive design so small font,button size.  
     6. Add confirmation dialogs for critical actions
     7. Implement proper error handling
     8. Include smooth animations and transitions
@@ -549,4 +562,401 @@ class AIOperations {
     final response = await model.generateContent(content);
     return response.text;
   }
+
+  Future<String?> editCode(String html,String feature) async {
+    final prompt = '''
+    I am an expert code modification specialist focusing on enhancing and extending existing applications. I transform your change requests into complete, production-ready implementations while maintaining the original architecture, style, and best practices.
+  
+    EXAMPLE INPUT:
+    ===CURRENT CODE===
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Simple Todo App</title>
+        <!-- Tailwind CSS -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <!-- Google Fonts -->
+        <link
+          href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            font-family: 'Roboto', sans-serif;
+          }
+        </style>
+      </head>
+      <body class="bg-gray-100">
+        <div id="root"></div>
+    
+        <!-- React and ReactDOM via CDN -->
+        <script
+          crossorigin
+          src="https://unpkg.com/react@17/umd/react.development.js"
+        ></script>
+        <script
+          crossorigin
+          src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"
+        ></script>
+        <!-- Babel CDN for JSX support -->
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+        <!-- React Code -->
+        <script type="text/babel">
+          const { useState, useEffect } = React;
+    
+          function TodoApp() {
+            const [todos, setTodos] = useState([]);
+            const [inputValue, setInputValue] = useState('');
+    
+            useEffect(() => {
+              const savedTodos = localStorage.getItem('todos');
+              if (savedTodos) {
+                setTodos(JSON.parse(savedTodos));
+              }
+            }, []);
+    
+            useEffect(() => {
+              localStorage.setItem('todos', JSON.stringify(todos));
+            }, [todos]);
+    
+            const addTodo = (e) => {
+              e.preventDefault();
+              if (!inputValue.trim()) return;
+              
+              const newTodo = {
+                id: Date.now(),
+                text: inputValue,
+                completed: false
+              };
+              
+              setTodos([...todos, newTodo]);
+              setInputValue('');
+            };
+    
+            const toggleTodo = (id) => {
+              const updatedTodos = todos.map(todo => 
+                todo.id === id ? { ...todo, completed: !todo.completed } : todo
+              );
+              setTodos(updatedTodos);
+            };
+    
+            const deleteTodo = (id) => {
+              const updatedTodos = todos.filter(todo => todo.id !== id);
+              setTodos(updatedTodos);
+            };
+    
+            return (
+              <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
+                <h1 className="text-2xl font-bold text-center mb-6">Todo App</h1>
+                
+                <form onSubmit={addTodo} className="mb-4">
+                  <div className="flex">
+                    <input
+                      type="text"
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      className="flex-1 p-2 border rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Add a new todo..."
+                    />
+                    <button
+                      type="submit"
+                      className="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600"
+                    >
+                      Add
+                    </button>
+                  </div>
+                </form>
+                
+                <ul className="space-y-2">
+                  {todos.map((todo) => (
+                    <li 
+                      key={todo.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded shadow-sm"
+                    >
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={todo.completed}
+                          onChange={() => toggleTodo(todo.id)}
+                          className="mr-2"
+                        />
+                        <span className={todo.completed ? 'line-through text-gray-500' : ''}>
+                          {todo.text}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => deleteTodo(todo.id)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        Delete
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                
+                {todos.length === 0 && (
+                  <p className="text-center text-gray-500 mt-4">No todos yet. Add one above!</p>
+                )}
+              </div>
+            );
+          }
+    
+          ReactDOM.render(<TodoApp />, document.getElementById('root'));
+        </script>
+      </body>
+    </html>
+
+  ===REQUESTED CHANGES===
+  Please add priority levels (High, Medium, Low) to todos with color coding and the ability to filter todos by priority and completion status.
+
+  EXAMPLE OUTPUT:
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Enhanced Todo App</title>
+      <!-- Tailwind CSS -->
+      <script src="https://cdn.tailwindcss.com"></script>
+      <!-- Google Fonts -->
+      <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+        rel="stylesheet"
+      />
+      <style>
+        body {
+          font-family: 'Roboto', sans-serif;
+        }
+      </style>
+    </head>
+    <body class="bg-gray-100">
+      <div id="root"></div>
+  
+      <!-- React and ReactDOM via CDN -->
+      <script
+        crossorigin
+        src="https://unpkg.com/react@17/umd/react.development.js"
+      ></script>
+      <script
+        crossorigin
+        src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"
+      ></script>
+      <!-- Babel CDN for JSX support -->
+      <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+      <!-- React Code -->
+      <script type="text/babel">
+        const { useState, useEffect } = React;
+  
+        function TodoApp() {
+          const [todos, setTodos] = useState([]);
+          const [inputValue, setInputValue] = useState('');
+          const [priority, setPriority] = useState('Medium');
+          const [filterPriority, setFilterPriority] = useState('All');
+          const [filterStatus, setFilterStatus] = useState('All');
+          
+          const priorities = ['High', 'Medium', 'Low'];
+          const priorityColors = {
+            High: 'bg-red-100 border-red-300',
+            Medium: 'bg-yellow-100 border-yellow-300',
+            Low: 'bg-green-100 border-green-300'
+          };
+  
+          useEffect(() => {
+            const savedTodos = localStorage.getItem('todos');
+            if (savedTodos) {
+              setTodos(JSON.parse(savedTodos));
+            }
+          }, []);
+  
+          useEffect(() => {
+            localStorage.setItem('todos', JSON.stringify(todos));
+          }, [todos]);
+  
+          const addTodo = (e) => {
+            e.preventDefault();
+            if (!inputValue.trim()) return;
+            
+            const newTodo = {
+              id: Date.now(),
+              text: inputValue,
+              completed: false,
+              priority: priority
+            };
+            
+            setTodos([...todos, newTodo]);
+            setInputValue('');
+          };
+  
+          const toggleTodo = (id) => {
+            const updatedTodos = todos.map(todo => 
+              todo.id === id ? { ...todo, completed: !todo.completed } : todo
+            );
+            setTodos(updatedTodos);
+          };
+  
+          const deleteTodo = (id) => {
+            const updatedTodos = todos.filter(todo => todo.id !== id);
+            setTodos(updatedTodos);
+          };
+          
+          const changePriority = (id, newPriority) => {
+            const updatedTodos = todos.map(todo => 
+              todo.id === id ? { ...todo, priority: newPriority } : todo
+            );
+            setTodos(updatedTodos);
+          };
+          
+          const filteredTodos = todos.filter(todo => {
+            const priorityMatch = filterPriority === 'All' || todo.priority === filterPriority;
+            const statusMatch = filterStatus === 'All' || 
+                               (filterStatus === 'Active' && !todo.completed) ||
+                               (filterStatus === 'Completed' && todo.completed);
+            return priorityMatch && statusMatch;
+          });
+  
+          return (
+            <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
+              <h1 className="text-2xl font-bold text-center mb-6">Todo App</h1>
+              
+              <form onSubmit={addTodo} className="mb-4">
+                <div className="flex mb-2">
+                  <input
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    className="flex-1 p-2 border rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Add a new todo..."
+                  />
+                  <button
+                    type="submit"
+                    className="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600"
+                  >
+                    Add
+                  </button>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <label className="text-sm text-gray-600">Priority:</label>
+                  <select 
+                    value={priority}
+                    onChange={(e) => setPriority(e.target.value)}
+                    className="p-1 border rounded text-sm"
+                  >
+                    {priorities.map(p => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </select>
+                </div>
+              </form>
+              
+              <div className="mb-4 flex flex-wrap gap-2">
+                <div className="w-full sm:w-auto">
+                  <label className="text-sm text-gray-600 mr-2">Filter Priority:</label>
+                  <select 
+                    value={filterPriority}
+                    onChange={(e) => setFilterPriority(e.target.value)}
+                    className="p-1 border rounded text-sm"
+                  >
+                    <option value="All">All</option>
+                    {priorities.map(p => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="w-full sm:w-auto">
+                  <label className="text-sm text-gray-600 mr-2">Filter Status:</label>
+                  <select 
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    className="p-1 border rounded text-sm"
+                  >
+                    <option value="All">All</option>
+                    <option value="Active">Active</option>
+                    <option value="Completed">Completed</option>
+                  </select>
+                </div>
+              </div>
+              
+              <ul className="space-y-2">
+                {filteredTodos.map((todo) => (
+                  <li 
+                    key={todo.id}
+                    className={`flex items-center justify-between p-3 rounded shadow-sm border \${priorityColors[todo.priority]}`}
+                  >
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={todo.completed}
+                        onChange={() => toggleTodo(todo.id)}
+                        className="mr-2"
+                      />
+                      <span className={todo.completed ? 'line-through text-gray-500' : ''}>
+                        {todo.text}
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <select
+                        value={todo.priority}
+                        onChange={(e) => changePriority(todo.id, e.target.value)}
+                        className="text-sm p-1 border rounded"
+                      >
+                        {priorities.map(p => (
+                          <option key={p} value={p}>{p}</option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => deleteTodo(todo.id)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              
+              {filteredTodos.length === 0 && (
+                <p className="text-center text-gray-500 mt-4">
+                  {todos.length === 0 ? "No todos yet. Add one above!" : "No todos match your filters."}
+                </p>
+              )}
+            </div>
+          );
+        }
+  
+        ReactDOM.render(<TodoApp />, document.getElementById('root'));
+      </script>
+    </body>
+  </html>
+
+  ===CURRENT CODE===
+  $html
+
+  ===REQUESTED CHANGES===
+  $feature
+
+  RESPONSE RULES:
+  1. Provide the COMPLETE updated code with all changes fully implemented
+  2. Maintain the existing code style, architecture, and naming conventions
+  3. Implement all requested features completely (no TODOs or placeholders)
+  4. Ensure backward compatibility with existing functionality
+  5. Preserve existing imports, dependencies, and library usage
+  6. Add proper error handling for new functionality
+  7. Include appropriate comments for significant changes
+  8. Ensure all new UI elements match the existing design language
+  9. Optimize for performance and maintainability
+  10. Do not explain the changes in your response - just provide the complete updated code
+
+  IMPORTANT: The response must be the complete, ready-to-use code with all changes fully implemented.
+  ''';
+
+      final content = [Content.text(prompt)];
+      final response = await model.generateContent(content);
+      return response.text;
+    }
 }
