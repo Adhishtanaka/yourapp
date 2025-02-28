@@ -1,7 +1,7 @@
 # YourApp
 
 ## Overview
-YourApp is an AI-powered application builder that allows users to generate fully functional apps within the same app. Instead of searching through app stores for solutions that may lack customization, updates, or essential features, users can create their own tailored applications using a simple prompt-based system. 
+YourApp is an AI-powered **mobile IDE and application builder** that allows users to generate fully functional apps within the same app. Instead of searching through app stores for solutions that may lack customization, updates, or essential features, users can create their own tailored applications using a simple prompt-based system. **This is not a one-click app-building solution but more like an AI-based mobile IDE, providing a workspace for generating and refining applications.**
 
 ## Approach
 
@@ -21,7 +21,7 @@ YourApp is an AI-powered application builder that allows users to generate fully
    - A dedicated section in the app stores previously used prompts and saved HTML code, minimizing token usage and offering a streamlined user experience.
 
 ## Features
-- **AI-Powered App Generation**: Users provide a prompt, which is optimized and fed into an AI model to generate a complete HTML-based app.
+- **AI-Powered Mobile IDE & App Generation**: Users provide a prompt, which is optimized and fed into an AI model to generate a complete HTML-based app.
 - **Customization & Editing**: Users can modify prompts and regenerate their apps instantly.
 - **Offline Support**: Save generated apps for future use without consuming additional AI tokens.
 - **Browser API Integration**: Leverage local storage and other browser capabilities for enhanced functionality.
@@ -69,3 +69,4 @@ YourApp is an AI-powered application builder that allows users to generate fully
 
 ## License
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+
