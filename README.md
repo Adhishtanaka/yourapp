@@ -5,7 +5,6 @@ YourApp is an AI-powered **mobile IDE and application builder** that allows user
 
 <img src="rss2.gif" alt="YourApp" width="300">
 
-
 ## Approach
 
 1. **AI-Assisted Code Generation**  
