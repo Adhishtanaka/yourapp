@@ -15,7 +15,7 @@ class AIOperations {
     if (key != null) {
       apiKey = key;
       model = GenerativeModel(
-        model: 'gemini-2.0-flash-exp',
+        model: 'gemini-3-pro-preview',
         apiKey: apiKey,
       );
     } else {
