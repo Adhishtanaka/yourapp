@@ -3,9 +3,16 @@ import 'package:flutter/services.dart';
 import 'package:yourapp/ui/pages/home.dart';
 import 'package:yourapp/ui/theme/app_theme.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   
   // Set system UI overlay style for a clean look
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(

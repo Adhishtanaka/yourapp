@@ -1,8 +1,10 @@
-import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:firebase_ai/firebase_ai.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:firebase_core/firebase_core.dart';
+import '../firebase_options.dart';
 
 class AIOperations {
-  late String apiKey;
   late final GenerativeModel model;
   final FlutterSecureStorage _storage = FlutterSecureStorage();
 
@@ -11,16 +13,7 @@ class AIOperations {
   }
 
   Future<void> _initialize() async {
-    String? key = await _storage.read(key: "api_key");
-    if (key != null) {
-      apiKey = key;
-      model = GenerativeModel(
-        model: 'gemini-3.0-flash',
-        apiKey: apiKey,
-      );
-    } else {
-      throw Exception("API key not found!");
-    }
+    model = FirebaseAI.googleAI().generativeModel(model: 'gemini-2.5-flash');
   }
 
   Future<String?> getPrompt(String prompt) async {

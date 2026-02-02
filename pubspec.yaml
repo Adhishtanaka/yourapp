@@ -17,7 +17,8 @@ dependencies:
   flutter_highlight: ^0.7.0
   shared_preferences: ^2.3.5
   permission_handler: ^11.4.0
-  google_generative_ai: ^0.4.6
+  firebase_ai: ^2.0.0
+  firebase_auth: ^5.0.0
   flutter_inappwebview: ^6.1.5
   flutter_native_splash: ^2.4.4
   flutter_secure_storage: ^9.2.4
