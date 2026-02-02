@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:yourapp/ui/theme/app_theme.dart';
 import 'package:yourapp/ui/pages/browser.dart';
 import 'package:yourapp/ui/pages/settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yourapp/ui/components/moreDetailsWidget.dart';
-
 
 class SavedComponent extends StatefulWidget {
   const SavedComponent({super.key});
@@ -18,6 +18,7 @@ class _SavedComponentState extends State<SavedComponent> {
   List<Map<String, String>> savedHtmlFiles = [];
   List<Map<String, String>> filteredFiles = [];
   bool isLoading = true;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -25,6 +26,12 @@ class _SavedComponentState extends State<SavedComponent> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadSavedHtmlFiles();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadSavedHtmlFiles() async {
@@ -104,12 +111,18 @@ class _SavedComponentState extends State<SavedComponent> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("File not found: $path")),
+          SnackBar(
+            content: Text("File not found"),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error opening file: $e")),
+        SnackBar(
+          content: Text("Error opening file"),
+          backgroundColor: AppColors.error,
+        ),
       );
     }
   }
@@ -119,106 +132,224 @@ class _SavedComponentState extends State<SavedComponent> {
     return SafeArea(
       child: Column(
         children: [
+          _buildHeader(),
+          Expanded(
+            child: isLoading
+                ? _buildLoadingState()
+                : filteredFiles.isEmpty
+                    ? _buildEmptyState()
+                    : _buildFilesList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.border, width: 1),
+              ),
+              child: TextField(
+                controller: _searchController,
+                onChanged: _search,
+                style: AppTextStyles.body,
+                decoration: InputDecoration(
+                  hintText: "Search saved apps...",
+                  prefixIcon: Icon(
+                    Icons.search_rounded,
+                    color: AppColors.textMuted,
+                    size: 20,
+                  ),
+                  hintStyle: AppTextStyles.body.copyWith(
+                    color: AppColors.textMuted,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 16,
+                  ),
+                  isDense: true,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
           Container(
-            margin:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.border, width: 1),
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.settings_outlined,
+                color: AppColors.textSecondary,
+                size: 22,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SettingsPage(),
+                  ),
+                );
+              },
+              tooltip: 'Settings',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 40,
+            height: 40,
+            child: CircularProgressIndicator(
+              color: AppColors.navy,
+              strokeWidth: 3,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            "Loading saved apps...",
+            style: AppTextStyles.bodySmall,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Icon(
+              Icons.folder_open_rounded,
+              size: 40,
+              color: AppColors.textMuted,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            "No saved apps yet",
+            style: AppTextStyles.h3.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Apps you create will appear here",
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textMuted,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilesList() {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      itemCount: filteredFiles.length,
+      itemBuilder: (context, index) {
+        final file = filteredFiles[index];
+        return _buildFileCard(file, index);
+      },
+    );
+  }
+
+  Widget _buildFileCard(Map<String, String> file, int index) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border, width: 1),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _openFile(file["path"] ?? ""),
+          borderRadius: BorderRadius.circular(14),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.navy.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.code_rounded,
+                    color: AppColors.navy,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 14),
                 Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey, width: 1),
-                    ),
-                    child: TextField(
-                      onChanged: _search,
-                      decoration: InputDecoration(
-                        hintText: "Search...",
-                        prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
-                        hintStyle:
-                            TextStyle(color: Colors.grey[600], fontSize: 15),
-                        border: InputBorder.none,
-                        contentPadding:
-                            const EdgeInsets.symmetric(vertical: 12),
-                        isDense: true,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        file["prompt"] ?? "Untitled",
+                        style: AppTextStyles.body.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "Tap to open",
+                        style: AppTextStyles.caption,
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 12),
-                IconButton(
-                  icon: Icon(Icons.settings, color: Colors.black87),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SettingsPage(),
-                      ),
-                    );
-                  },
-                  tooltip: 'Settings',
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceVariant,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
           ),
-          Expanded(
-            child: isLoading
-                ? Center(child: CircularProgressIndicator())
-                : filteredFiles.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.folder_open,
-                                size: 64, color: Colors.grey[400]),
-                            SizedBox(height: 16),
-                            Text(
-                              "No saved files found",
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : ListView.separated(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        itemCount: filteredFiles.length,
-                        separatorBuilder: (context, index) =>
-                            Divider(height: 1),
-                        itemBuilder: (context, index) {
-                          final file = filteredFiles[index];
-                          return ListTile(
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
-                            title: Text(
-                              file["prompt"] ?? "No title",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 16,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            trailing: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.blue[50],
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              padding: EdgeInsets.all(8),
-                              child: Icon(
-                                Icons.open_in_new,
-                                size: 20,
-                              ),
-                            ),
-                            onTap: () => _openFile(file["path"] ?? ""),
-                          );
-                        },
-                      ),
-          ),
-        ],
+        ),
       ),
     );
   }

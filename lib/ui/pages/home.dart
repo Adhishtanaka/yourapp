@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yourapp/ui/theme/app_theme.dart';
 import 'package:yourapp/ui/components/homeSection.dart';
 import 'package:yourapp/ui/components/savedSection.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -30,10 +31,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _checkApi() async {
-      String? apiKey = await getApiKey();
-      if (apiKey == null) {
-        showApiKeyDialog(context);
-      }
+    String? apiKey = await getApiKey();
+    if (apiKey == null) {
+      showApiKeyDialog(context);
+    }
   }
 
   void _onItemTapped(int index) {
@@ -47,10 +48,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return await storage.read(key: "api_key");
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: IndexedStack(
         index: _selectedIndex,
         children: const [
@@ -58,21 +59,80 @@ class _HomeScreenState extends State<HomeScreen> {
           SavedComponent(),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        selectedItemColor: Colors.grey[800],
-        unselectedItemColor: Colors.grey[600],
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add),
-            label: 'New',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          border: Border(
+            top: BorderSide(
+              color: AppColors.border,
+              width: 1,
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bookmark_border),
-            label: 'Saved',
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(
+                  index: 0,
+                  icon: Icons.add_rounded,
+                  activeIcon: Icons.add_rounded,
+                  label: 'Create',
+                ),
+                _buildNavItem(
+                  index: 1,
+                  icon: Icons.bookmark_outline_rounded,
+                  activeIcon: Icons.bookmark_rounded,
+                  label: 'Saved',
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem({
+    required int index,
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+  }) {
+    final isSelected = _selectedIndex == index;
+    return GestureDetector(
+      onTap: () => _onItemTapped(index),
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.navy.withOpacity(0.08) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isSelected ? activeIcon : icon,
+              color: isSelected ? AppColors.navy : AppColors.textMuted,
+              size: 22,
+            ),
+            if (isSelected) ...[
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  color: AppColors.navy,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

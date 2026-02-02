@@ -1,11 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:yourapp/ui/theme/app_theme.dart';
 import 'package:yourapp/ui/pages/home.dart';
 import 'package:yourapp/ui/pages/browser.dart';
 import 'package:yourapp/ui/components/savedWidget.dart';
 import 'package:flutter_highlight/flutter_highlight.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_highlight/themes/atom-one-light.dart';
+import 'package:flutter_highlight/themes/atom-one-dark.dart';
 import 'package:yourapp/ui/components/alertDialogWidget.dart';
 
 class MoreDetailsScreen extends StatefulWidget {
@@ -20,6 +21,7 @@ class MoreDetailsScreen extends StatefulWidget {
 class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
   String? _htmlContent;
   String? _prompt;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -39,10 +41,17 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
           setState(() {
             _htmlContent = file.readAsStringSync();
             _prompt = data["prompt"];
+            _isLoading = false;
           });
         }
         break;
       }
+    }
+    
+    if (_isLoading) {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -70,7 +79,9 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
 
     if (mounted) {
       Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => HomeScreen()));
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
     }
   }
 
@@ -81,96 +92,244 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("yourapp")),
-      body: Column(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_rounded,
+            color: AppColors.textPrimary,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Code Details',
+          style: AppTextStyles.h3,
+        ),
+        centerTitle: true,
+      ),
+      body: _isLoading
+          ? _buildLoadingState()
+          : _htmlContent == null
+              ? _buildErrorState()
+              : _buildContent(),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Container(
-                width: double.infinity,
-                color: Colors.grey.shade300,
-                child: _htmlContent != null
-                    ? HighlightView(
-                  cleanHtml(_htmlContent!),
-                  language: 'html',
-                  theme: atomOneLightTheme,
-                  padding: const EdgeInsets.all(8),
-                  textStyle: const TextStyle(fontSize: 14),
-                )
-                    : const Center(child: CircularProgressIndicator()),
-              ),
+          SizedBox(
+            width: 40,
+            height: 40,
+            child: CircularProgressIndicator(
+              color: AppColors.navy,
+              strokeWidth: 3,
             ),
           ),
+          const SizedBox(height: 16),
+          Text(
+            "Loading code...",
+            style: AppTextStyles.bodySmall,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
           Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16.0),
-            color: Colors.white,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  _prompt ?? "No Prompt",
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BrowserUI(
-                            html: _htmlContent!,
-                            bottomWidget: SavedWidget(
-                              prompt: _prompt!,
-                              html: _htmlContent!,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                    ),
-                    child: const Text("Edit Prompt",
-                        style: TextStyle(fontSize: 11, color: Colors.white)),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      showConfirmationDialog(
-                        context: context,
-                        title: "Delete App",
-                        content: "Do you want to delete the app?",
-                        onConfirm: () {
-                          _deleteHtml();
-                        },
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF800000),
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                    ),
-                    child: const Text("Delete",
-                        style: TextStyle(fontSize: 11, color: Colors.white)),
-                  ),
-                ),
-              ],
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: AppColors.errorLight,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Icon(
+              Icons.error_outline_rounded,
+              size: 40,
+              color: AppColors.error,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            "File not found",
+            style: AppTextStyles.h3.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "The requested file could not be loaded",
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textMuted,
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildContent() {
+    return Column(
+      children: [
+        // Prompt header
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            border: Border(
+              bottom: BorderSide(color: AppColors.border, width: 1),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Prompt',
+                style: AppTextStyles.caption.copyWith(
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _prompt ?? "No prompt available",
+                style: AppTextStyles.body.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+        // Code viewer
+        Expanded(
+          child: Container(
+            margin: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF282C34), // atom-one-dark background
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.border, width: 1),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(13),
+              child: SingleChildScrollView(
+                child: HighlightView(
+                  cleanHtml(_htmlContent!),
+                  language: 'html',
+                  theme: atomOneDarkTheme,
+                  padding: const EdgeInsets.all(16),
+                  textStyle: const TextStyle(
+                    fontSize: 13,
+                    fontFamily: 'monospace',
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        // Action buttons
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            border: Border(
+              top: BorderSide(color: AppColors.border, width: 1),
+            ),
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BrowserUI(
+                              html: _htmlContent!,
+                              bottomWidget: SavedWidget(
+                                prompt: _prompt!,
+                                html: _htmlContent!,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.navy,
+                        foregroundColor: AppColors.textOnDark,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.edit_rounded,
+                            size: 18,
+                            color: AppColors.textOnDark,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Edit',
+                            style: AppTextStyles.button.copyWith(
+                              color: AppColors.textOnDark,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    onPressed: () {
+                      showConfirmationDialog(
+                        context: context,
+                        title: "Delete App",
+                        content: "Are you sure you want to delete this app? This action cannot be undone.",
+                        onConfirm: _deleteHtml,
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.errorLight,
+                      foregroundColor: AppColors.error,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 20,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Icon(
+                      Icons.delete_outline_rounded,
+                      size: 20,
+                      color: AppColors.error,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
