@@ -16,8 +16,14 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   final FlutterSecureStorage storage = FlutterSecureStorage();
+  bool _isClearingRecords = false;
+  bool _isResetting = false;
 
   Future<void> clearAllRecords() async {
+    setState(() {
+      _isClearingRecords = true;
+    });
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.clear();
 
@@ -31,6 +37,10 @@ class _SettingsPageState extends State<SettingsPage> {
       });
     }
 
+    setState(() {
+      _isClearingRecords = false;
+    });
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text("All records cleared successfully"),
@@ -40,8 +50,17 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> clearAllData() async {
+    setState(() {
+      _isResetting = true;
+    });
+
     await clearAllRecords();
     await storage.delete(key: "api_key");
+
+    setState(() {
+      _isResetting = false;
+    });
+
     SystemNavigator.pop();
   }
 
@@ -177,14 +196,17 @@ class _SettingsPageState extends State<SettingsPage> {
             iconColor: AppColors.textSecondary,
             title: 'Clear All Records',
             subtitle: 'Remove all saved HTML files',
-            onTap: () {
-              showConfirmationDialog(
-                context: context,
-                title: "Clear Records",
-                content: "Are you sure you want to clear all saved records? This action cannot be undone.",
-                onConfirm: clearAllRecords,
-              );
-            },
+            onTap: _isClearingRecords
+                ? null
+                : () {
+                    showConfirmationDialog(
+                      context: context,
+                      title: "Clear Records",
+                      content: "Are you sure you want to clear all saved records? This action cannot be undone.",
+                      onConfirm: clearAllRecords,
+                    );
+                  },
+            isLoading: _isClearingRecords,
           ),
           Divider(
             height: 1,
@@ -196,15 +218,18 @@ class _SettingsPageState extends State<SettingsPage> {
             iconColor: AppColors.error,
             title: 'Reset App',
             subtitle: 'Clear all data including API key',
-            onTap: () {
-              showConfirmationDialog(
-                context: context,
-                title: "Reset App",
-                content: "This will delete all data and close the app. Are you sure?",
-                onConfirm: clearAllData,
-              );
-            },
+            onTap: _isResetting
+                ? null
+                : () {
+                    showConfirmationDialog(
+                      context: context,
+                      title: "Reset App",
+                      content: "This will delete all data and close the app. Are you sure?",
+                      onConfirm: clearAllData,
+                    );
+                  },
             isDestructive: true,
+            isLoading: _isResetting,
           ),
         ],
       ),
@@ -216,8 +241,9 @@ class _SettingsPageState extends State<SettingsPage> {
     required Color iconColor,
     required String title,
     required String subtitle,
-    required VoidCallback onTap,
+    required VoidCallback? onTap,
     bool isDestructive = false,
+    bool isLoading = false,
   }) {
     return Material(
       color: Colors.transparent,
@@ -237,11 +263,16 @@ class _SettingsPageState extends State<SettingsPage> {
                       : AppColors.surfaceVariant,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(
-                  icon,
-                  color: iconColor,
-                  size: 22,
-                ),
+                child: isLoading
+                    ? CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: iconColor,
+                      )
+                    : Icon(
+                        icon,
+                        color: iconColor,
+                        size: 22,
+                      ),
               ),
               const SizedBox(width: 14),
               Expanded(

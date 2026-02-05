@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:yourapp/ui/theme/app_theme.dart';
 import 'package:yourapp/ui/pages/browser.dart';
 import 'package:yourapp/utils/ai_operations.dart';
@@ -19,6 +20,7 @@ class _SavedWidgetState extends State<SavedWidget> {
   late TextEditingController _controller;
   final gemini = AIOperations();
   bool _isLoading = false;
+  String _loadingMessage = "Applying changes...";
 
   @override
   void initState() {
@@ -35,12 +37,27 @@ class _SavedWidgetState extends State<SavedWidget> {
   Future<void> _handleSubmit() async {
     if (_controller.text.isEmpty) return;
     
+    HapticFeedback.mediumImpact();
+    FocusScope.of(context).unfocus();
+    
     setState(() {
       _isLoading = true;
+      _loadingMessage = "Applying changes...";
+    });
+    
+    // Rotate messages
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted && _isLoading) {
+        setState(() {
+          _loadingMessage = "Almost done...";
+        });
+      }
     });
     
     final newHtmlCode = await gemini.editCode(widget.html, _controller.text);
     _controller.clear();
+    
+    if (!mounted) return;
     
     setState(() {
       _isLoading = false;
@@ -100,15 +117,32 @@ class _SavedWidgetState extends State<SavedWidget> {
                     ),
                     const SizedBox(width: 8),
                     _isLoading
-                        ? Padding(
-                            padding: const EdgeInsets.all(8),
-                            child: SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: AppColors.navy,
-                              ),
+                        ? Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: AppColors.navy.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.navy,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  _loadingMessage,
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: AppColors.navy,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
                           )
                         : IconButton(

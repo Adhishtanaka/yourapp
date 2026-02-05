@@ -22,6 +22,7 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
   String? _htmlContent;
   String? _prompt;
   bool _isLoading = true;
+  bool _isDeleting = false;
 
   @override
   void initState() {
@@ -68,6 +69,10 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
   }
 
   Future<void> _deleteHtml() async {
+    setState(() {
+      _isDeleting = true;
+    });
+
     File file = File(widget.path);
     if (await file.exists()) {
       await file.delete();
@@ -76,6 +81,10 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
     List<String> savedList = prefs.getStringList("saved_html") ?? [];
     savedList.removeWhere((item) => item.contains(widget.path.split('/').last));
     await prefs.setStringList("saved_html", savedList);
+
+    setState(() {
+      _isDeleting = false;
+    });
 
     if (mounted) {
       Navigator.pushReplacement(
@@ -298,16 +307,18 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton(
-                    onPressed: () {
-                      showConfirmationDialog(
-                        context: context,
-                        title: "Delete App",
-                        content: "Are you sure you want to delete this app? This action cannot be undone.",
-                        onConfirm: _deleteHtml,
-                      );
-                    },
+                    onPressed: _isDeleting
+                        ? null
+                        : () {
+                            showConfirmationDialog(
+                              context: context,
+                              title: "Delete App",
+                              content: "Are you sure you want to delete this app? This action cannot be undone.",
+                              onConfirm: _deleteHtml,
+                            );
+                          },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.errorLight,
+                      backgroundColor: _isDeleting ? AppColors.surfaceVariant : AppColors.errorLight,
                       foregroundColor: AppColors.error,
                       padding: const EdgeInsets.symmetric(
                         vertical: 16,
@@ -318,11 +329,20 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
                       ),
                       elevation: 0,
                     ),
-                    child: Icon(
-                      Icons.delete_outline_rounded,
-                      size: 20,
-                      color: AppColors.error,
-                    ),
+                    child: _isDeleting
+                        ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.error,
+                            ),
+                          )
+                        : Icon(
+                            Icons.delete_outline_rounded,
+                            size: 20,
+                            color: AppColors.error,
+                          ),
                   ),
                 ],
               ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:yourapp/ui/theme/app_theme.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class BrowserUI extends StatefulWidget {
   final String html;
@@ -15,6 +17,7 @@ class _BrowserUIState extends State<BrowserUI> {
   late InAppWebViewController webViewController;
   late PullToRefreshController pullToRefreshController;
   bool isLoading = true;
+  bool hasError = false;
 
   String cleanHtml(String html) {
     return html.replaceAll('```html', '').replaceAll('```', '').trim();
@@ -25,6 +28,7 @@ class _BrowserUIState extends State<BrowserUI> {
     super.initState();
     pullToRefreshController = PullToRefreshController(
       onRefresh: () async {
+        HapticFeedback.lightImpact();
         webViewController.reload();
       },
     );
@@ -38,27 +42,62 @@ class _BrowserUIState extends State<BrowserUI> {
         backgroundColor: AppColors.surface,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_rounded,
-            color: AppColors.textPrimary,
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              Icons.arrow_back_rounded,
+              color: AppColors.textPrimary,
+              size: 20,
+            ),
           ),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            Navigator.pop(context);
+          },
         ),
-        title: Text(
-          'Preview',
-          style: AppTextStyles.h3,
+        title: Column(
+          children: [
+            Text(
+              'App Preview',
+              style: AppTextStyles.body.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (isLoading)
+              Text(
+                'Loading...',
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.textMuted,
+                  fontSize: 11,
+                ),
+              ),
+          ],
         ),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(
-              Icons.refresh_rounded,
-              color: AppColors.textSecondary,
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                Icons.refresh_rounded,
+                color: AppColors.textSecondary,
+                size: 20,
+              ),
             ),
             onPressed: () {
+              HapticFeedback.lightImpact();
               webViewController.reload();
             },
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: Column(
@@ -84,8 +123,17 @@ class _BrowserUIState extends State<BrowserUI> {
                     initialSettings: InAppWebViewSettings(
                       iframeAllowFullscreen: true,
                       allowsInlineMediaPlayback: true,
+                      javaScriptEnabled: true,
+                      javaScriptCanOpenWindowsAutomatically: true,
+                      supportMultipleWindows: true,
+                      useShouldOverrideUrlLoading: true,
+                      useOnLoadResource: true,
+                      mixedContentMode:
+                          MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
+                      allowContentAccess: true,
+                      allowFileAccess: true,
                       userAgent:
-                          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+                          "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
                     ),
                     initialData: InAppWebViewInitialData(
                       data: cleanHtml(widget.html),
@@ -94,6 +142,34 @@ class _BrowserUIState extends State<BrowserUI> {
                     pullToRefreshController: pullToRefreshController,
                     onWebViewCreated: (controller) {
                       webViewController = controller;
+                    },
+                    shouldOverrideUrlLoading:
+                        (controller, navigationAction) async {
+                      final uri = navigationAction.request.url;
+                      if (uri != null) {
+                        final urlString = uri.toString();
+                        // Check if it's an external URL (not localhost/local content)
+                        if (!urlString.startsWith('https://localhost') &&
+                            !urlString.startsWith('about:') &&
+                            !urlString.startsWith('data:')) {
+                          // Open external URLs in system browser or new webview
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri,
+                                mode: LaunchMode.externalApplication);
+                          }
+                          return NavigationActionPolicy.CANCEL;
+                        }
+                      }
+                      return NavigationActionPolicy.ALLOW;
+                    },
+                    onCreateWindow: (controller, createWindowRequest) async {
+                      // Handle window.open() calls - open in external browser
+                      final url = createWindowRequest.request.url;
+                      if (url != null && await canLaunchUrl(url)) {
+                        await launchUrl(url,
+                            mode: LaunchMode.externalApplication);
+                      }
+                      return false;
                     },
                     onLoadStart: (controller, url) {
                       setState(() {
@@ -115,18 +191,32 @@ class _BrowserUIState extends State<BrowserUI> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(
-                            width: 40,
-                            height: 40,
-                            child: CircularProgressIndicator(
-                              color: AppColors.navy,
-                              strokeWidth: 3,
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: AppColors.navy.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(14),
+                              child: CircularProgressIndicator(
+                                color: AppColors.navy,
+                                strokeWidth: 3,
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 20),
                           Text(
-                            "Loading preview...",
-                            style: AppTextStyles.bodySmall,
+                            "Rendering your app...",
+                            style: AppTextStyles.body.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "This may take a moment",
+                            style: AppTextStyles.caption,
                           ),
                         ],
                       ),

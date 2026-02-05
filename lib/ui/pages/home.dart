@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:yourapp/ui/theme/app_theme.dart';
 import 'package:yourapp/ui/components/homeSection.dart';
 import 'package:yourapp/ui/components/savedSection.dart';
@@ -19,28 +20,43 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _requestLocationPermission();
-    _checkApi();
+    // Defer permission and API check until after the first frame is rendered
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeApp();
+    });
+  }
+
+  Future<void> _initializeApp() async {
+    if (!mounted) return;
+    await _checkApi();
+    if (!mounted) return;
+    await _requestLocationPermission();
   }
 
   Future<void> _requestLocationPermission() async {
-    var status = await Permission.location.request();
+    var status = await Permission.location.status;
     if (status.isDenied) {
-      openAppSettings();
+      status = await Permission.location.request();
+      if (status.isPermanentlyDenied && mounted) {
+        openAppSettings();
+      }
     }
   }
 
   Future<void> _checkApi() async {
     String? apiKey = await getApiKey();
-    if (apiKey == null) {
+    if (apiKey == null && mounted) {
       showApiKeyDialog(context);
     }
   }
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (_selectedIndex != index) {
+      HapticFeedback.lightImpact();
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
   }
 
   Future<String?> getApiKey() async {

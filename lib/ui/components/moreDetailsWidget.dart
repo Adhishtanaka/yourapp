@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:yourapp/ui/theme/app_theme.dart';
 import 'package:yourapp/ui/pages/moreDetails.dart';
 
@@ -6,9 +7,13 @@ Widget MoreDetailsWideget(BuildContext context, String path) {
   return Container(
     decoration: BoxDecoration(
       color: AppColors.surface,
-      border: Border(
-        top: BorderSide(color: AppColors.border, width: 1),
-      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.05),
+          blurRadius: 10,
+          offset: const Offset(0, -4),
+        ),
+      ],
     ),
     child: SafeArea(
       child: Padding(
@@ -17,10 +22,24 @@ Widget MoreDetailsWideget(BuildContext context, String path) {
           width: double.infinity,
           child: ElevatedButton(
             onPressed: () {
+              HapticFeedback.lightImpact();
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => MoreDetailsScreen(path: path),
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => MoreDetailsScreen(path: path),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    return SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0, 0.1),
+                        end: Offset.zero,
+                      ).animate(CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeOut,
+                      )),
+                      child: FadeTransition(opacity: animation, child: child),
+                    );
+                  },
+                  transitionDuration: const Duration(milliseconds: 250),
                 ),
               );
             },
@@ -29,7 +48,7 @@ Widget MoreDetailsWideget(BuildContext context, String path) {
               foregroundColor: AppColors.textOnDark,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
               ),
               elevation: 0,
             ),
@@ -41,11 +60,12 @@ Widget MoreDetailsWideget(BuildContext context, String path) {
                   size: 20,
                   color: AppColors.textOnDark,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 Text(
-                  'View Details',
+                  'View Code & Details',
                   style: AppTextStyles.button.copyWith(
                     color: AppColors.textOnDark,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],

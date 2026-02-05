@@ -18,10 +18,10 @@ class AIOperations {
 
   Future<String?> getPrompt(String prompt) async {
     final fullPrompt = '''
-    I am the world's leading expert in system design and software architecture, specializing in creating comprehensive application blueprints. With extensive experience in UI/UX design, accessibility standards, and color theory including Material Design principles, I provide complete, production-ready specifications.
+    I am the world's leading expert in mobile app design and system architecture, specializing in creating comprehensive mobile application blueprints. With extensive experience in mobile UI/UX design, accessibility standards, and Material Design principles, I provide complete, production-ready specifications for mobile-first applications.
 
     TASK:
-    Generate a detailed application specification based on the user's requirements.
+    Generate a detailed mobile application specification based on the user's requirements.
 
     VALIDATION RULES:
     - Must be a valid application development request
@@ -42,14 +42,16 @@ class AIOperations {
     - Task management with deadline tracking and completion status
     - Subject-based task categorization
     - Visual progress tracking with percentage indicators
-    - LocalStorage persistence for task data
+    - LocalStorage persistence for task data (ALL features must be fully functional with real data persistence)
 
     ===UI DESIGN===
     Layout:
-    - Clean, responsive single-page layout
-    - Fixed header with app title
-    - Floating Action Button for task creation
-    - Card-based task list with edit functionality
+    - Mobile-first responsive design optimized for phone screens
+    - Clean, distraction-free single-page layout
+    - NO app bar/top bar - use bottom navigation bar only with 3-5 main sections (NEVER use sidebars)
+    - Floating Action Button for primary actions
+    - Card-based content with touch-friendly tap targets (minimum 44px)
+    - Scrollable content areas with proper spacing
     
     Color Scheme:
     - Primary: Indigo (#4F46E5)
@@ -59,27 +61,36 @@ class AIOperations {
     - Accent: Purple for buttons and interactions
     
     Components:
-    - Subject filter pills with active state indicators
+    - Bottom Navigation Bar with icons and labels for main sections
+    - Subject filter chips with active state indicators
     - Task cards with:
-          - Checkbox for completion
+          - Checkbox for completion (large touch target)
           - Progress bar
           - Deadline display
-          - Edit button
+          - Edit button (touch-friendly size)
           - Title and subject display
-    - Modal dialog for task creation/editing
-    - Responsive form inputs with validation
-    - Interactive elements with hover states
+    - Full-screen modal for task creation/editing
+    - Large, touch-friendly form inputs
+    - Mobile-optimized buttons and interactive elements
 
     ===USER FLOWS===
-    1. Task Creation:
-       - Tap FAB → Fill task details → Select subject
-       - Set priority → Add deadline → Confirm (with haptic feedback)
-       - View task in relevant category
+    1. Navigation:
+       - Tap bottom nav items to switch between main sections
+       - Smooth transitions between views
+       - Active section clearly indicated
 
-    2. Task Management:
-       - Click checkbox to complete task
-       - edit button for detailed edit
-       - Click on chips to filter task categories
+    2. Task Creation:
+       - Tap FAB → Full-screen form opens
+       - Fill task details with mobile keyboard support
+       - Select subject from dropdown
+       - Set deadline using native date/time picker
+       - Confirm and see task in list
+
+    3. Task Management:
+       - Tap checkbox to complete task
+       - Tap edit button for full-screen edit view
+       - Swipe or tap chips to filter categories
+       - Pull to refresh for updates
 
     User's application idea: $prompt
 
@@ -87,12 +98,14 @@ class AIOperations {
     1. Validate input against rules first
     2. For invalid inputs, respond only with "no"
     3. For valid inputs, follow exact format above
-    4. Include only essential, implementable features
-    5. Ensure all UI elements follow Material Design
-    6. Maintain accessibility standards in design
-    7. No explanations or comments in output
-    8. you can decide colors and layout for this application as well.
-    9. Prevent UI clutter by limiting app bar elements.
+    4. Design for MOBILE-FIRST: NO app bar/top bar, use bottom navigation only, NO sidebars
+    5. All features must be FULLY FUNCTIONAL with real data (NO mock data)
+    6. Ensure all UI elements follow Material Design mobile guidelines
+    7. All interactive elements must have touch-friendly sizes (44px minimum)
+    8. Include proper mobile gestures and interactions
+    9. No explanations or comments in output
+    10. You can decide colors and layout, but prioritize mobile usability
+    11. Keep navigation simple - bottom nav with 3-5 items maximum
     ''';
 
     final content = [Content.text(fullPrompt)];
@@ -105,22 +118,29 @@ class AIOperations {
 
   Future<String?> getCode(String prompt) async {
     final fullPrompt = '''
-    I am an expert SPA (Single Page Application) architect specializing in creating production-ready, accessible, and performant web mobile responsive applications. With mastery of React, Tailwind CSS, and Material Design principles, I deliver complete, ready-to-deploy solutions that perfectly match your specifications.
+    I am an expert mobile-first web application architect specializing in creating production-ready, touch-optimized, and performant mobile web applications. With mastery of React, Tailwind CSS, and Material Design mobile principles, I deliver complete, fully-functional solutions optimized for mobile devices with NO mock data and ALL features working correctly.
 
+    CRITICAL REQUIREMENTS:
+    - MOBILE-FIRST DESIGN: Optimize for phone screens, touch interactions
+    - NO APP BAR/TOP BAR: Use bottom navigation bar only - no top app bars needed
+    - BOTTOM NAVIGATION ONLY: Never use sidebars or desktop-style navigation
+    - NO MOCK DATA: All features must work with real LocalStorage/IndexedDB
+    - FULLY FUNCTIONAL: Every feature must work correctly, no placeholders
+    - TOUCH-OPTIMIZED: All buttons/inputs minimum 44px, proper spacing
+    
     EXAMPLE INPUT :
     ===CORE FEATURES===
     - Task management with deadline tracking and completion status
     - Subject-based task categorization
     - Visual progress tracking with percentage indicators
-    - LocalStorage persistence for task data
-    - Simple analytics on task completion rates
+    - LocalStorage persistence for task data (ALL features must be fully functional)
 
     ===UI DESIGN===
     Layout:
-    - Clean, responsive single-page layout
-    - Fixed header with app title
+    - Mobile-first responsive design for phone screens
+    - NO app bar/top bar - bottom navigation bar only with main sections
     - Floating Action Button for task creation
-    - Card-based task list with edit functionality
+    - Card-based task list with large touch targets
     
     Color Scheme:
     - Primary: Indigo (#4F46E5)
@@ -169,6 +189,13 @@ class AIOperations {
         <style>
           body {
             font-family: 'Roboto', sans-serif;
+          }
+          @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+          }
+          .animate-slide-down {
+            animation: slideDown 0.3s ease-out;
           }
         </style>
       </head>
@@ -291,18 +318,9 @@ class AIOperations {
             };
     
             return (
-              <div className="min-h-screen">
-                {/* Header */}
-                <header className="bg-indigo-600 shadow-lg">
-                  <div className="container mx-auto px-4 py-6">
-                    <h1 className="text-2xl font-bold text-white">
-                      Student Task Manager
-                    </h1>
-                  </div>
-                </header>
-    
-                {/* Main Content */}
-                <main className="container mx-auto px-4 py-8">
+              <div className="min-h-screen pb-20">
+                {/* Main Content - No App Bar, just content */}
+                <main className="container mx-auto px-4 py-6">
                   {/* Task Filters */}
                   <div className="mb-6">
                     <div className="flex space-x-2 overflow-x-auto pb-2">
@@ -400,10 +418,10 @@ class AIOperations {
                     </div>
                   )}
     
-                  {/* Add Task Button */}
+                  {/* Add Task Button - positioned above bottom nav */}
                   <button
                     onClick={() => setShowTaskModal(true)}
-                    className="fixed right-6 bottom-6 w-14 h-14 bg-indigo-600 rounded-full shadow-lg flex items-center justify-center text-white hover:bg-indigo-700 transition"
+                    className="fixed right-6 bottom-24 w-14 h-14 bg-indigo-600 rounded-full shadow-lg flex items-center justify-center text-white hover:bg-indigo-700 transition"
                   >
                     <svg
                       className="w-6 h-6"
@@ -420,23 +438,34 @@ class AIOperations {
                     </svg>
                   </button>
     
-                  {/* Task Modal */}
+                  {/* Task Modal - Slides from top */}
                   {showTaskModal && (
                     <div
-                      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+                      className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center pt-4"
                       onClick={() => setShowTaskModal(false)}
                     >
                       <div
-                        className="bg-white rounded-lg p-6 w-full max-w-md"
+                        className="bg-white rounded-b-2xl p-6 w-full max-w-md animate-slide-down shadow-2xl"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <h2 className="text-xl font-bold mb-4">
-                          {editingTask ? 'Edit Task' : 'Add New Task'}
-                        </h2>
+                        <div className="flex items-center justify-between mb-6">
+                          <h2 className="text-xl font-bold">
+                            {editingTask ? 'Edit Task' : 'Add New Task'}
+                          </h2>
+                          <button
+                            type="button"
+                            onClick={() => setShowTaskModal(false)}
+                            className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 active:bg-gray-200"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
                         <form onSubmit={saveTask}>
-                          <div className="space-y-4">
+                          <div className="space-y-5">
                             <div>
-                              <label className="block text-sm font-medium text-gray-700">
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Title
                               </label>
                               <input
@@ -445,12 +474,12 @@ class AIOperations {
                                 onChange={(e) =>
                                   setTaskForm({ ...taskForm, title: e.target.value })
                                 }
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                className="block w-full h-12 px-4 text-base rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-0 transition-colors"
                                 required
                               />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700">
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Subject
                               </label>
                               <select
@@ -461,7 +490,7 @@ class AIOperations {
                                     subject: e.target.value,
                                   })
                                 }
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                className="block w-full h-12 px-4 text-base rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-0 transition-colors"
                               >
                                 {subjects.map((subject) => (
                                   <option key={subject} value={subject}>
@@ -471,7 +500,7 @@ class AIOperations {
                               </select>
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700">
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Deadline
                               </label>
                               <input
@@ -483,12 +512,12 @@ class AIOperations {
                                     deadline: e.target.value,
                                   })
                                 }
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                className="block w-full h-12 px-4 text-base rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-0 transition-colors"
                                 required
                               />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700">
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Progress (%)
                               </label>
                               <input
@@ -502,21 +531,21 @@ class AIOperations {
                                 }
                                 min="0"
                                 max="100"
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                className="block w-full h-12 px-4 text-base rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-0 transition-colors"
                               />
                             </div>
                           </div>
-                          <div className="mt-6 flex justify-end space-x-3">
+                          <div className="mt-8 flex space-x-3">
                             <button
                               type="button"
                               onClick={() => setShowTaskModal(false)}
-                              className="px-4 py-2 text-gray-700 hover:text-gray-900"
+                              className="flex-1 h-12 text-base font-medium text-gray-700 bg-gray-100 rounded-xl active:bg-gray-200 transition-colors"
                             >
                               Cancel
                             </button>
                             <button
                               type="submit"
-                              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                              className="flex-1 h-12 text-base font-medium bg-indigo-600 text-white rounded-xl active:bg-indigo-700 transition-colors"
                             >
                               Save
                             </button>
@@ -526,6 +555,31 @@ class AIOperations {
                     </div>
                   )}
                 </main>
+
+                {/* Bottom Navigation Bar */}
+                <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
+                  <div className="flex justify-around items-center h-16">
+                    <button className="flex flex-col items-center justify-center w-full h-full text-indigo-600">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                      <span className="text-xs mt-1">Tasks</span>
+                    </button>
+                    <button className="flex flex-col items-center justify-center w-full h-full text-gray-500">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                      <span className="text-xs mt-1">Progress</span>
+                    </button>
+                    <button className="flex flex-col items-center justify-center w-full h-full text-gray-500">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span className="text-xs mt-1">Settings</span>
+                    </button>
+                  </div>
+                </nav>
               </div>
             );
           }
@@ -539,16 +593,24 @@ class AIOperations {
 
     RESPONSE RULES:
     1. Generate complete, production-ready HTML/React.js/Tailwind code
-    2. Implement all core features from the system design
-    3. Follow Material Design principles using Tailwind classes
-    4. Include all required functionality (no TODO comments)
-    5. Ensure mobile-first responsive design so small font,button size.  
-    6. Add confirmation dialogs for critical actions
-    7. Implement proper error handling
-    8. Include smooth animations and transitions
-    9. You can add any library using cdn link adding to html code
-    10. Use good coding practice
-    11. also you can use any browser api.
+    2. MOBILE-FIRST: Design for phone screens first, NO app bar/top bar, use bottom navigation only (NEVER sidebars)
+    3. ALL FEATURES FULLY FUNCTIONAL: No mock data, use LocalStorage/IndexedDB for persistence
+    4. Implement all core features from the system design completely
+    5. Follow Material Design mobile principles using Tailwind classes
+    6. NO TODO COMMENTS: Every feature must be fully implemented and working
+    7. Touch-optimized UI: All buttons minimum h-12 (48px), inputs minimum h-12, proper spacing for fingers
+    8. Bottom navigation bar with 3-5 items maximum, icons + labels
+    9. MODALS: Must slide from TOP (not bottom/center), use items-start and pt-4 positioning, include close button (min 40x40px)
+    10. Implement proper error handling for all operations
+    11. Include smooth mobile-friendly animations (add CSS keyframes for slide-down animation)
+    12. Use CDN links for any additional libraries needed
+    13. Use good coding practices and proper state management
+    14. Leverage browser APIs (LocalStorage, IndexedDB, etc.) for data persistence
+    15. NO MOCK DATA: All data must persist and be fully functional
+    16. Responsive font sizes: body text 16px+, labels 14px+, buttons 16px font
+    17. All interactive elements must have active: states for touch feedback
+    18. For RSS feeds: Use rss2json.com API (https://api.rss2json.com/v1/api.json?rss_url=YOUR_RSS_URL) - it's fast and free
+    19. For external API calls: Prefer APIs with CORS support, implement loading states and error handling with retry buttons
     ''';
 
     final content = [Content.text(fullPrompt)];

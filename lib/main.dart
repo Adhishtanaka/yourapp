@@ -4,10 +4,12 @@ import 'package:yourapp/ui/pages/home.dart';
 import 'package:yourapp/ui/theme/app_theme.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'firebase_options.dart';
 
 Future main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   
   // Initialize Firebase
   await Firebase.initializeApp(
@@ -21,6 +23,9 @@ Future main() async {
     systemNavigationBarColor: AppColors.surface,
     systemNavigationBarIconBrightness: Brightness.dark,
   ));
+  
+  // Remove the splash screen
+  FlutterNativeSplash.remove();
   
   runApp(
     Phoenix(
