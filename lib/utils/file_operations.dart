@@ -13,7 +13,7 @@ class FileOperations {
     return directory.path;
   }
 
-  Future<void> saveHtml(String prompt, String htmlContent ,context) async {
+  Future<void> saveHtml(String prompt, String htmlContent, context, {String? spec}) async {
     final id = _uuid.v4();
     final fileName = "$id.html";
     final path = await _getStoragePath();
@@ -21,12 +21,35 @@ class FileOperations {
 
     await file.writeAsString(htmlContent);
 
+    // Save spec file alongside the HTML if provided
+    if (spec != null && spec.isNotEmpty) {
+      final specFile = File('$path/$id.spec.txt');
+      await specFile.writeAsString(spec);
+    }
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    Map<String, String> data = {"id": id, "prompt": prompt, "path": file.path};
+    Map<String, String> data = {
+      "id": id,
+      "prompt": prompt,
+      "path": file.path,
+      "hasSpec": (spec != null && spec.isNotEmpty) ? "true" : "false",
+    };
     List<String> savedList = prefs.getStringList("saved_html") ?? [];
     savedList.add(data.toString());
     await prefs.setStringList("saved_html", savedList);
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => HomeScreen()));
     }
+
+  Future<String?> loadSpec(String htmlPath) async {
+    try {
+      // Derive spec path from HTML path: replace .html with .spec.txt
+      final specPath = htmlPath.replaceAll('.html', '.spec.txt');
+      final specFile = File(specPath);
+      if (await specFile.exists()) {
+        return await specFile.readAsString();
+      }
+    } catch (_) {}
+    return null;
+  }
 }

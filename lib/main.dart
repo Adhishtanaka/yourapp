@@ -16,7 +16,7 @@ Future main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   
-  // Set system UI overlay style for a clean look
+  // Set system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.dark,

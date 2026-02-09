@@ -9,8 +9,9 @@ import 'package:yourapp/ui/components/alertDialogWidget.dart';
 class SavedWidget extends StatefulWidget {
   final String prompt;
   final String html;
+  final String? spec;
 
-  const SavedWidget({super.key, required this.prompt, required this.html});
+  const SavedWidget({super.key, required this.prompt, required this.html, this.spec});
 
   @override
   _SavedWidgetState createState() => _SavedWidgetState();
@@ -68,7 +69,7 @@ class _SavedWidgetState extends State<SavedWidget> {
       MaterialPageRoute(
         builder: (context) => BrowserUI(
           html: newHtmlCode!,
-          bottomWidget: SavedWidget(prompt: widget.prompt, html: newHtmlCode),
+          bottomWidget: SavedWidget(prompt: widget.prompt, html: newHtmlCode, spec: widget.spec),
         ),
       ),
     );
@@ -183,7 +184,7 @@ class _SavedWidgetState extends State<SavedWidget> {
                             content: "Do you want to save this app to your collection?",
                             onConfirm: () {
                               FileOperations fo = FileOperations();
-                              fo.saveHtml(widget.prompt, widget.html, context);
+                              fo.saveHtml(widget.prompt, widget.html, context, spec: widget.spec);
                             },
                           );
                         },

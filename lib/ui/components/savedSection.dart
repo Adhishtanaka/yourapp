@@ -239,7 +239,7 @@ class _SavedComponentState extends State<SavedComponent> {
                 onChanged: _search,
                 style: AppTextStyles.body,
                 decoration: InputDecoration(
-                  hintText: "Search saved apps...",
+                  hintText: "Search projects...",
                   prefixIcon: Icon(
                     Icons.search_rounded,
                     color: AppColors.textMuted,
@@ -335,7 +335,7 @@ class _SavedComponentState extends State<SavedComponent> {
             ),
             const SizedBox(height: 24),
             Text(
-              hasSearchQuery ? "No results found" : "No saved apps yet",
+              hasSearchQuery ? "No results found" : "No projects yet",
               style: AppTextStyles.h3.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -344,7 +344,7 @@ class _SavedComponentState extends State<SavedComponent> {
             Text(
               hasSearchQuery
                   ? "Try a different search term"
-                  : "Apps you create will appear here",
+                  : "Projects you build will appear here",
               textAlign: TextAlign.center,
               style: AppTextStyles.body.copyWith(
                 color: AppColors.textMuted,
@@ -369,7 +369,7 @@ class _SavedComponentState extends State<SavedComponent> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      "Tap Create to build your first app",
+                      "Tap Build to create your first app",
                       style: AppTextStyles.caption.copyWith(
                         color: AppColors.navy,
                         fontWeight: FontWeight.w500,

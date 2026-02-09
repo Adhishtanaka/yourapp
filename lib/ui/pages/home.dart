@@ -93,15 +93,15 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 _buildNavItem(
                   index: 0,
-                  icon: Icons.add_rounded,
-                  activeIcon: Icons.add_rounded,
-                  label: 'Create',
+                  icon: Icons.auto_awesome_outlined,
+                  activeIcon: Icons.auto_awesome_rounded,
+                  label: 'Build',
                 ),
                 _buildNavItem(
                   index: 1,
-                  icon: Icons.bookmark_outline_rounded,
-                  activeIcon: Icons.bookmark_rounded,
-                  label: 'Saved',
+                  icon: Icons.folder_outlined,
+                  activeIcon: Icons.folder_rounded,
+                  label: 'Projects',
                 ),
               ],
             ),

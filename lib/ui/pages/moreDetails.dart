@@ -4,6 +4,7 @@ import 'package:yourapp/ui/theme/app_theme.dart';
 import 'package:yourapp/ui/pages/home.dart';
 import 'package:yourapp/ui/pages/browser.dart';
 import 'package:yourapp/ui/components/savedWidget.dart';
+import 'package:yourapp/utils/file_operations.dart';
 import 'package:flutter_highlight/flutter_highlight.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_highlight/themes/atom-one-dark.dart';
@@ -21,8 +22,10 @@ class MoreDetailsScreen extends StatefulWidget {
 class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
   String? _htmlContent;
   String? _prompt;
+  String? _specContent;
   bool _isLoading = true;
   bool _isDeleting = false;
+  bool _showSpec = false;
 
   @override
   void initState() {
@@ -39,9 +42,14 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
       if (data["path"] == widget.path) {
         File file = File(data["path"]);
         if (await file.exists()) {
+          // Load spec file if it exists
+          final fo = FileOperations();
+          final spec = await fo.loadSpec(data["path"]);
+          
           setState(() {
             _htmlContent = file.readAsStringSync();
             _prompt = data["prompt"];
+            _specContent = spec;
             _isLoading = false;
           });
         }
@@ -77,6 +85,13 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
     if (await file.exists()) {
       await file.delete();
     }
+    // Also delete spec file if it exists
+    final specPath = widget.path.replaceAll('.html', '.spec.txt');
+    File specFile = File(specPath);
+    if (await specFile.exists()) {
+      await specFile.delete();
+    }
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String> savedList = prefs.getStringList("saved_html") ?? [];
     savedList.removeWhere((item) => item.contains(widget.path.split('/').last));
@@ -221,32 +236,40 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
             ],
           ),
         ),
-        // Code viewer
-        Expanded(
-          child: Container(
-            margin: const EdgeInsets.all(16),
+        // Spec/Code toggle (only show if spec exists)
+        if (_specContent != null) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: const Color(0xFF282C34), // atom-one-dark background
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.border, width: 1),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(13),
-              child: SingleChildScrollView(
-                child: HighlightView(
-                  cleanHtml(_htmlContent!),
-                  language: 'html',
-                  theme: atomOneDarkTheme,
-                  padding: const EdgeInsets.all(16),
-                  textStyle: const TextStyle(
-                    fontSize: 13,
-                    fontFamily: 'monospace',
-                    height: 1.5,
-                  ),
-                ),
+              color: AppColors.surface,
+              border: Border(
+                bottom: BorderSide(color: AppColors.border, width: 1),
               ),
             ),
+            child: Row(
+              children: [
+                _buildToggleButton(
+                  label: 'Spec',
+                  icon: Icons.description_outlined,
+                  isActive: _showSpec,
+                  onTap: () => setState(() => _showSpec = true),
+                ),
+                const SizedBox(width: 8),
+                _buildToggleButton(
+                  label: 'Code',
+                  icon: Icons.code_rounded,
+                  isActive: !_showSpec,
+                  onTap: () => setState(() => _showSpec = false),
+                ),
+              ],
+            ),
           ),
+        ],
+        // Content viewer
+        Expanded(
+          child: _showSpec && _specContent != null
+              ? _buildSpecViewer()
+              : _buildCodeViewer(),
         ),
         // Action buttons
         Container(
@@ -272,6 +295,7 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
                               bottomWidget: SavedWidget(
                                 prompt: _prompt!,
                                 html: _htmlContent!,
+                                spec: _specContent,
                               ),
                             ),
                           ),
@@ -350,6 +374,146 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildToggleButton({
+    required String label,
+    required IconData icon,
+    required bool isActive,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive ? AppColors.navy : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isActive ? AppColors.navy : AppColors.border,
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: isActive ? AppColors.textOnDark : AppColors.textMuted,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: AppTextStyles.caption.copyWith(
+                color: isActive ? AppColors.textOnDark : AppColors.textMuted,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSpecViewer() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.navy,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border, width: 1),
+      ),
+      child: SingleChildScrollView(
+        child: _buildFormattedSpec(_specContent!),
+      ),
+    );
+  }
+
+  Widget _buildFormattedSpec(String spec) {
+    final lines = spec.split('\n');
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: lines.map((line) {
+        if (line.startsWith('# ')) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8, top: 4),
+            child: Text(
+              line.substring(2),
+              style: AppTextStyles.h2.copyWith(
+                color: AppColors.textOnDark,
+                fontSize: 18,
+              ),
+            ),
+          );
+        } else if (line.startsWith('## ')) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 6, top: 8),
+            child: Text(
+              line.substring(3),
+              style: AppTextStyles.h3.copyWith(
+                color: AppColors.textOnDark,
+                fontSize: 15,
+              ),
+            ),
+          );
+        } else if (line.startsWith('- ') || line.startsWith('• ')) {
+          return Padding(
+            padding: const EdgeInsets.only(left: 12, bottom: 3),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('• ', style: TextStyle(color: AppColors.slateMuted, fontSize: 14)),
+                Expanded(
+                  child: Text(
+                    line.substring(2),
+                    style: TextStyle(color: AppColors.textOnDark.withOpacity(0.85), fontSize: 13, height: 1.4),
+                  ),
+                ),
+              ],
+            ),
+          );
+        } else if (line.trim().isEmpty) {
+          return const SizedBox(height: 6);
+        } else {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text(
+              line,
+              style: TextStyle(color: AppColors.textOnDark.withOpacity(0.9), fontSize: 13, height: 1.5),
+            ),
+          );
+        }
+      }).toList(),
+    );
+  }
+
+  Widget _buildCodeViewer() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF282C34),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border, width: 1),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(13),
+        child: SingleChildScrollView(
+          child: HighlightView(
+            cleanHtml(_htmlContent!),
+            language: 'html',
+            theme: atomOneDarkTheme,
+            padding: const EdgeInsets.all(16),
+            textStyle: const TextStyle(
+              fontSize: 13,
+              fontFamily: 'monospace',
+              height: 1.5,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

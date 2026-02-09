@@ -208,14 +208,14 @@ class _BrowserUIState extends State<BrowserUI> {
                           ),
                           const SizedBox(height: 20),
                           Text(
-                            "Rendering your app...",
+                            "Loading preview...",
                             style: AppTextStyles.body.copyWith(
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            "This may take a moment",
+                            "Rendering your mobile app",
                             style: AppTextStyles.caption,
                           ),
                         ],
