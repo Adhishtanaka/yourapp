@@ -19,12 +19,11 @@ class _HomeComponentState extends State<HomeComponent>
   final gemini = AIOperations();
   bool isLoading = false;
 
-  // Spec-driven state
-  // phases: idle | analyzing | reviewSpec | building | done
+  // phases: idle | analyzing | reviewSpec | building
   String _phase = 'idle';
   String? _specContent;
   String? _errorMessage;
-  String? _userPrompt; // original user input
+  String? _userPrompt;
   late AnimationController _pulseController;
   late ScrollController _specScrollController;
   late TextEditingController _specEditController;
@@ -53,7 +52,6 @@ class _HomeComponentState extends State<HomeComponent>
     super.dispose();
   }
 
-  // ── Phase 1: User submits idea → AI generates spec ──
   Future<void> _handleSubmitIdea() async {
     if (controller.text.isEmpty) return;
 
@@ -77,13 +75,11 @@ class _HomeComponentState extends State<HomeComponent>
       setState(() {
         _phase = 'idle';
         isLoading = false;
-        _errorMessage =
-            "That doesn't look like a mobile app idea. Describe an app you'd like to build.";
+        _errorMessage = "Not a valid app idea. Try describing a mobile app.";
       });
       return;
     }
 
-    // Spec generated → pause for user review
     setState(() {
       _phase = 'reviewSpec';
       _specContent = spec;
@@ -92,13 +88,11 @@ class _HomeComponentState extends State<HomeComponent>
     });
   }
 
-  // ── Phase 2: User approves spec → AI builds code ──
   Future<void> _handleApproveSpec() async {
     if (_specContent == null) return;
 
     HapticFeedback.mediumImpact();
 
-    // If user was editing, grab the edited text
     final specToUse =
         _isEditingSpec ? _specEditController.text : _specContent!;
 
@@ -115,9 +109,9 @@ class _HomeComponentState extends State<HomeComponent>
 
     if (htmlCode == null) {
       setState(() {
-        _phase = 'reviewSpec'; // go back to spec so they can retry
+        _phase = 'reviewSpec';
         isLoading = false;
-        _errorMessage = "Failed to build the app. You can edit the spec and try again.";
+        _errorMessage = "Build failed. Edit spec and retry.";
       });
       return;
     }
@@ -136,7 +130,6 @@ class _HomeComponentState extends State<HomeComponent>
       ),
     );
 
-    // Reset state
     controller.clear();
     setState(() {
       _phase = 'idle';
@@ -147,7 +140,6 @@ class _HomeComponentState extends State<HomeComponent>
     });
   }
 
-  // ── User rejects spec → back to input ──
   void _handleRejectSpec() {
     HapticFeedback.lightImpact();
     setState(() {
@@ -158,7 +150,6 @@ class _HomeComponentState extends State<HomeComponent>
     });
   }
 
-  // ── User wants to regenerate spec ──
   Future<void> _handleRegenerateSpec() async {
     if (_userPrompt == null) return;
 
@@ -179,7 +170,7 @@ class _HomeComponentState extends State<HomeComponent>
       setState(() {
         _phase = 'idle';
         isLoading = false;
-        _errorMessage = "Failed to generate spec. Please try again.";
+        _errorMessage = "Failed to generate spec.";
       });
       return;
     }
@@ -208,7 +199,6 @@ class _HomeComponentState extends State<HomeComponent>
       case 'building':
         return _buildBuildingUI();
       default:
-        // idle
         return Column(
           children: [
             Expanded(
@@ -224,80 +214,56 @@ class _HomeComponentState extends State<HomeComponent>
     }
   }
 
-  // ──────────────────────────────────────────
-  // PHASE: Analyzing (spinner while spec generates)
-  // ──────────────────────────────────────────
+  // ── Analyzing ──
 
   Widget _buildAnalyzingUI() {
-    return AnimatedBuilder(
-      animation: _pulseController,
-      builder: (context, child) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Transform.scale(
-                scale: 1.0 + (_pulseController.value * 0.06),
-                child: Container(
-                  width: 88,
-                  height: 88,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.navy,
-                        AppColors.navy.withOpacity(0.8),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.navy.withOpacity(
-                            0.3 * (1 - _pulseController.value * 0.5)),
-                        blurRadius: 20 + (_pulseController.value * 8),
-                        spreadRadius: _pulseController.value * 2,
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.psychology_rounded,
-                    size: 40,
-                    color: Colors.white,
-                  ),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          AnimatedBuilder(
+            animation: _pulseController,
+            builder: (context, child) {
+              return Opacity(
+                opacity: 0.4 + (_pulseController.value * 0.6),
+                child: const Icon(
+                  Icons.psychology_rounded,
+                  size: 36,
+                  color: AppColors.accentBlue,
                 ),
-              ),
-              const SizedBox(height: 32),
-              Text(
-                'Generating Spec',
-                style: AppTextStyles.h2.copyWith(fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Analyzing your idea and writing the specification...',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.body.copyWith(color: AppColors.textMuted),
-              ),
-              const SizedBox(height: 28),
-              _buildAnimatedDots(),
-            ],
+              );
+            },
           ),
-        );
-      },
+          const SizedBox(height: 16),
+          Text(
+            'generating spec...',
+            style: AppTextStyles.monoSmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: 120,
+            child: LinearProgressIndicator(
+              backgroundColor: AppColors.border,
+              valueColor: const AlwaysStoppedAnimation(AppColors.accentBlue),
+              minHeight: 2,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  // ──────────────────────────────────────────
-  // PHASE: Review Spec (user reads, edits, approves)
-  // ──────────────────────────────────────────
+  // ── Spec Review ──
 
   Widget _buildSpecReviewUI() {
     return Column(
       children: [
-        // Header bar
+        // Tab-style header
         Container(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-          decoration: BoxDecoration(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+          decoration: const BoxDecoration(
             color: AppColors.surface,
             border: Border(
               bottom: BorderSide(color: AppColors.border, width: 1),
@@ -307,79 +273,49 @@ class _HomeComponentState extends State<HomeComponent>
             children: [
               GestureDetector(
                 onTap: _handleRejectSpec,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceVariant,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    Icons.arrow_back_rounded,
-                    color: AppColors.textPrimary,
-                    size: 20,
-                  ),
+                child: const Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Icon(Icons.close, color: AppColors.textMuted, size: 16),
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Review Specification',
-                      style: AppTextStyles.body.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      _isEditingSpec ? 'Editing — modify the spec below' : 'Review the spec before building',
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                  ],
+              const SizedBox(width: 8),
+              Icon(
+                Icons.description_outlined,
+                size: 14,
+                color: AppColors.accentBlue,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'spec.md',
+                style: AppTextStyles.monoSmall.copyWith(
+                  color: AppColors.textPrimary,
                 ),
               ),
-              // Edit/View toggle
+              const Spacer(),
               GestureDetector(
                 onTap: () {
                   HapticFeedback.lightImpact();
                   setState(() {
                     if (_isEditingSpec) {
-                      // Save edits back
                       _specContent = _specEditController.text;
                     }
                     _isEditingSpec = !_isEditingSpec;
                   });
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: _isEditingSpec
-                        ? AppColors.navy.withOpacity(0.1)
-                        : AppColors.surfaceVariant,
-                    borderRadius: BorderRadius.circular(10),
-                    border: _isEditingSpec
-                        ? Border.all(color: AppColors.navy.withOpacity(0.3))
-                        : null,
+                        ? AppColors.accentBlue.withOpacity(0.15)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(3),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        _isEditingSpec ? Icons.visibility_rounded : Icons.edit_rounded,
-                        size: 16,
-                        color: _isEditingSpec ? AppColors.navy : AppColors.textSecondary,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        _isEditingSpec ? 'Preview' : 'Edit',
-                        style: AppTextStyles.caption.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: _isEditingSpec ? AppColors.navy : AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    _isEditingSpec ? 'preview' : 'edit',
+                    style: AppTextStyles.monoSmall.copyWith(
+                      color: _isEditingSpec ? AppColors.accentBlue : AppColors.textMuted,
+                      fontSize: 10,
+                    ),
                   ),
                 ),
               ),
@@ -387,28 +323,25 @@ class _HomeComponentState extends State<HomeComponent>
           ),
         ),
 
-        // Error banner (if build failed and came back here)
+        // Error banner
         if (_errorMessage != null)
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            color: AppColors.error.withOpacity(0.08),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            color: AppColors.errorLight,
             child: Row(
               children: [
-                Icon(Icons.warning_amber_rounded, size: 18, color: AppColors.error),
-                const SizedBox(width: 8),
+                const Icon(Icons.warning_amber_rounded, size: 14, color: AppColors.error),
+                const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     _errorMessage!,
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.error,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: AppTextStyles.caption.copyWith(color: AppColors.error),
                   ),
                 ),
                 GestureDetector(
                   onTap: () => setState(() => _errorMessage = null),
-                  child: Icon(Icons.close, size: 16, color: AppColors.error),
+                  child: const Icon(Icons.close, size: 14, color: AppColors.error),
                 ),
               ],
             ),
@@ -427,18 +360,12 @@ class _HomeComponentState extends State<HomeComponent>
 
   Widget _buildSpecReadView() {
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.navy,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.navy.withOpacity(0.2),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: AppColors.border),
       ),
       child: SingleChildScrollView(
         controller: _specScrollController,
@@ -449,25 +376,20 @@ class _HomeComponentState extends State<HomeComponent>
 
   Widget _buildSpecEditor() {
     return Container(
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.navy.withOpacity(0.3), width: 1.5),
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: AppColors.accentBlue, width: 1),
       ),
       child: TextField(
         controller: _specEditController,
         maxLines: null,
         expands: true,
-        style: const TextStyle(
-          fontSize: 13,
-          fontFamily: 'monospace',
-          color: AppColors.textPrimary,
-          height: 1.5,
-        ),
+        style: AppTextStyles.mono.copyWith(fontSize: 12),
         decoration: const InputDecoration(
           border: InputBorder.none,
-          contentPadding: EdgeInsets.all(16),
+          contentPadding: EdgeInsets.all(12),
         ),
       ),
     );
@@ -475,85 +397,69 @@ class _HomeComponentState extends State<HomeComponent>
 
   Widget _buildSpecActionButtons() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.fromLTRB(12, 6, 12, 12),
+      decoration: const BoxDecoration(
         color: AppColors.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -4),
-          ),
-        ],
+        border: Border(top: BorderSide(color: AppColors.border)),
       ),
       child: SafeArea(
         top: false,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Primary: Approve & Build
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _handleApproveSpec,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.navy,
-                  foregroundColor: AppColors.textOnDark,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: AppColors.accentBlue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                   elevation: 0,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.rocket_launch_rounded, size: 20),
-                    const SizedBox(width: 10),
-                    Text(
-                      'Approve & Build',
-                      style: AppTextStyles.button.copyWith(
-                        color: AppColors.textOnDark,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    const Icon(Icons.play_arrow_rounded, size: 16),
+                    const SizedBox(width: 6),
+                    Text('Build', style: AppTextStyles.button.copyWith(color: Colors.white)),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 10),
-            // Secondary row: Regenerate & Discard
+            const SizedBox(height: 6),
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: OutlinedButton(
                     onPressed: _handleRegenerateSpec,
-                    icon: const Icon(Icons.refresh_rounded, size: 18),
-                    label: const Text('Regenerate'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.navy,
-                      side: BorderSide(color: AppColors.border),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      foregroundColor: AppColors.textPrimary,
+                      side: const BorderSide(color: AppColors.border),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
+                    child: const Icon(Icons.refresh, size: 16),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 6),
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: OutlinedButton(
                     onPressed: _handleRejectSpec,
-                    icon: const Icon(Icons.close_rounded, size: 18),
-                    label: const Text('Discard'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.textMuted,
-                      side: BorderSide(color: AppColors.border),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: const BorderSide(color: AppColors.border),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
+                    child: const Icon(Icons.close, size: 16),
                   ),
                 ),
               ],
@@ -564,96 +470,60 @@ class _HomeComponentState extends State<HomeComponent>
     );
   }
 
-  // ──────────────────────────────────────────
-  // PHASE: Building (spinner while code generates)
-  // ──────────────────────────────────────────
+  // ── Building ──
 
   Widget _buildBuildingUI() {
-    return AnimatedBuilder(
-      animation: _pulseController,
-      builder: (context, child) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          AnimatedBuilder(
+            animation: _pulseController,
+            builder: (context, child) {
+              return Opacity(
+                opacity: 0.4 + (_pulseController.value * 0.6),
+                child: const Icon(
+                  Icons.code_rounded,
+                  size: 36,
+                  color: AppColors.accentBlue,
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'building...',
+            style: AppTextStyles.monoSmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Transform.scale(
-                scale: 1.0 + (_pulseController.value * 0.06),
-                child: Container(
-                  width: 88,
-                  height: 88,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.navy,
-                        AppColors.navy.withOpacity(0.8),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.navy.withOpacity(
-                            0.3 * (1 - _pulseController.value * 0.5)),
-                        blurRadius: 20 + (_pulseController.value * 8),
-                        spreadRadius: _pulseController.value * 2,
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.code_rounded,
-                    size: 40,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
+              const Icon(Icons.check, size: 10, color: AppColors.success),
+              const SizedBox(width: 4),
               Text(
-                'Building Your App',
-                style: AppTextStyles.h2.copyWith(fontWeight: FontWeight.w700),
+                'spec approved',
+                style: AppTextStyles.caption.copyWith(color: AppColors.success),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Turning your approved spec into a working app...',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.body.copyWith(color: AppColors.textMuted),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: AppColors.success.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.check_circle_rounded,
-                        size: 14, color: AppColors.success),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Spec approved',
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.success,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              _buildAnimatedDots(),
             ],
           ),
-        );
-      },
+          const SizedBox(height: 16),
+          SizedBox(
+            width: 120,
+            child: LinearProgressIndicator(
+              backgroundColor: AppColors.border,
+              valueColor: const AlwaysStoppedAnimation(AppColors.accentBlue),
+              minHeight: 2,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  // ──────────────────────────────────────────
-  // PHASE: Idle (welcome + input)
-  // ──────────────────────────────────────────
+  // ── Idle ──
 
   Widget _buildErrorUI() {
     return Padding(
@@ -662,32 +532,27 @@ class _HomeComponentState extends State<HomeComponent>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 72,
-            height: 72,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              color: AppColors.error.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
+              color: AppColors.errorLight,
+              borderRadius: BorderRadius.circular(4),
             ),
-            child: const Icon(
-              Icons.error_outline_rounded,
-              size: 36,
-              color: AppColors.error,
-            ),
+            child: const Icon(Icons.error_outline, size: 24, color: AppColors.error),
           ),
-          const SizedBox(height: 24),
-          Text("Something went wrong", style: AppTextStyles.h2),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
+          Text('Error', style: AppTextStyles.h3),
+          const SizedBox(height: 6),
           Text(
             _errorMessage!,
             textAlign: TextAlign.center,
-            style: AppTextStyles.body.copyWith(color: AppColors.textMuted),
+            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted),
           ),
-          const SizedBox(height: 24),
-          TextButton.icon(
+          const SizedBox(height: 16),
+          TextButton(
             onPressed: () => setState(() => _errorMessage = null),
-            icon: const Icon(Icons.arrow_back_rounded, size: 18),
-            label: const Text("Try again"),
-            style: TextButton.styleFrom(foregroundColor: AppColors.navy),
+            style: TextButton.styleFrom(foregroundColor: AppColors.accentBlue),
+            child: const Text('Try again'),
           ),
         ],
       ),
@@ -695,263 +560,85 @@ class _HomeComponentState extends State<HomeComponent>
   }
 
   Widget _buildWelcomeUI() {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(height: 40),
-            // App icon with gradient
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.navy, Color(0xFF1E3A5F)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(22),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.navy.withOpacity(0.35),
-                    blurRadius: 24,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.auto_awesome_rounded,
-                size: 38,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 32),
-            Text(
-              "Spec-Driven\nApp Builder",
-              textAlign: TextAlign.center,
-              style: AppTextStyles.h1.copyWith(
-                color: AppColors.textPrimary,
-                height: 1.15,
-                fontSize: 30,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppColors.navy.withOpacity(0.06),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                "MOBILE APPS ONLY",
-                style: AppTextStyles.caption.copyWith(
-                  color: AppColors.navy,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1.0,
-                  fontSize: 11,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              "Describe your app → We generate a spec → Then build it",
-              textAlign: TextAlign.center,
-              style: AppTextStyles.body.copyWith(
-                color: AppColors.textMuted,
-              ),
-            ),
-            const SizedBox(height: 32),
-            _buildHowItWorks(),
-            const SizedBox(height: 28),
-            _buildSuggestionChips(),
-            const SizedBox(height: 20),
-          ],
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(
+          Icons.terminal_rounded,
+          size: 32,
+          color: AppColors.textMuted,
         ),
-      ),
-    );
-  }
-
-  Widget _buildHowItWorks() {
-    final steps = [
-      {'icon': Icons.edit_note_rounded, 'label': 'Describe'},
-      {'icon': Icons.description_rounded, 'label': 'Spec'},
-      {'icon': Icons.phone_android_rounded, 'label': 'Preview'},
-    ];
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: List.generate(steps.length * 2 - 1, (index) {
-          if (index.isOdd) {
-            return Icon(
-              Icons.arrow_forward_rounded,
-              size: 16,
-              color: AppColors.textMuted,
-            );
-          }
-          final step = steps[index ~/ 2];
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppColors.navy.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(
-                  step['icon'] as IconData,
-                  size: 22,
-                  color: AppColors.navy,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                step['label'] as String,
-                style: AppTextStyles.caption.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
-          );
-        }),
-      ),
-    );
-  }
-
-  Widget _buildSuggestionChips() {
-    final suggestions = [
-      {"icon": Icons.check_circle_outline, "text": "Todo List App"},
-      {"icon": Icons.calculate_outlined, "text": "Calculator"},
-      {"icon": Icons.timer_outlined, "text": "Pomodoro Timer"},
-      {"icon": Icons.note_outlined, "text": "Notes App"},
-    ];
-
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      alignment: WrapAlignment.center,
-      children: suggestions.map((suggestion) {
-        return InkWell(
-          onTap: () {
-            controller.text = suggestion["text"] as String;
-          },
-          borderRadius: BorderRadius.circular(20),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  suggestion["icon"] as IconData,
-                  size: 16,
-                  color: AppColors.textSecondary,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  suggestion["text"] as String,
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
+        const SizedBox(height: 12),
+        Text(
+          'describe. spec. build.',
+          style: AppTextStyles.monoSmall.copyWith(
+            color: AppColors.textMuted,
+            letterSpacing: 1.5,
           ),
-        );
-      }).toList(),
+        ),
+      ],
     );
   }
 
   Widget _buildInputSection() {
     final hasText = controller.text.isNotEmpty;
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.fromLTRB(12, 6, 12, 12),
+      decoration: const BoxDecoration(
         color: AppColors.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -4),
-          ),
-        ],
+        border: Border(top: BorderSide(color: AppColors.border, width: 1)),
       ),
       child: SafeArea(
         top: false,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+        child: Container(
           decoration: BoxDecoration(
-            color: AppColors.surfaceVariant.withOpacity(0.5),
-            borderRadius: BorderRadius.circular(16),
+            color: AppColors.surfaceVariant,
+            borderRadius: BorderRadius.circular(4),
             border: Border.all(
-              color: hasText ? AppColors.navy : Colors.transparent,
-              width: hasText ? 2 : 1,
+              color: hasText ? AppColors.accentBlue : AppColors.border,
+              width: 1,
             ),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               Expanded(
                 child: TextField(
                   controller: controller,
-                  style: AppTextStyles.body,
+                  style: AppTextStyles.mono,
                   maxLines: 4,
                   minLines: 1,
                   textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
-                    hintText: 'Describe your mobile app idea...',
-                    hintStyle: AppTextStyles.body.copyWith(
+                    hintText: '> describe your app',
+                    hintStyle: AppTextStyles.mono.copyWith(
                       color: AppColors.textMuted,
                     ),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
                     isDense: true,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.only(bottom: 6),
                 child: GestureDetector(
                   onTap: hasText && !isLoading ? _handleSubmitIdea : null,
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    width: 40,
-                    height: 40,
+                    width: 32,
+                    height: 32,
                     decoration: BoxDecoration(
                       color: hasText && !isLoading
-                          ? AppColors.navy
-                          : AppColors.surfaceVariant,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: hasText && !isLoading
-                          ? [
-                              BoxShadow(
-                                color: AppColors.navy.withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ]
-                          : null,
+                          ? AppColors.accentBlue
+                          : AppColors.elevated,
+                      borderRadius: BorderRadius.circular(4),
                     ),
                     child: isLoading
-                        ? Padding(
-                            padding: const EdgeInsets.all(10),
+                        ? const Padding(
+                            padding: EdgeInsets.all(8),
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               color: AppColors.textMuted,
@@ -959,15 +646,13 @@ class _HomeComponentState extends State<HomeComponent>
                           )
                         : Icon(
                             Icons.arrow_upward_rounded,
-                            color: hasText
-                                ? AppColors.textOnDark
-                                : AppColors.textMuted,
-                            size: 22,
+                            color: hasText ? Colors.white : AppColors.textMuted,
+                            size: 18,
                           ),
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
             ],
           ),
         ),
@@ -975,36 +660,7 @@ class _HomeComponentState extends State<HomeComponent>
     );
   }
 
-  // ──────────────────────────────────────────
-  // Shared widgets
-  // ──────────────────────────────────────────
-
-  Widget _buildAnimatedDots() {
-    return SizedBox(
-      height: 8,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(3, (index) {
-          return AnimatedBuilder(
-            animation: _pulseController,
-            builder: (context, child) {
-              final delay = index * 0.15;
-              final value = ((_pulseController.value + delay) % 1.0);
-              return Container(
-                width: 6,
-                height: 6,
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.navy.withOpacity(0.3 + value * 0.7),
-                ),
-              );
-            },
-          );
-        }),
-      ),
-    );
-  }
+  // ── Formatted spec renderer ──
 
   Widget _buildFormattedSpec(String spec) {
     final lines = spec.split('\n');
@@ -1013,31 +669,30 @@ class _HomeComponentState extends State<HomeComponent>
     for (final line in lines) {
       final trimmed = line.trim();
       if (trimmed.isEmpty) {
-        widgets.add(const SizedBox(height: 6));
+        widgets.add(const SizedBox(height: 4));
       } else if (trimmed.startsWith('===') && trimmed.endsWith('===')) {
         final title = trimmed.replaceAll('===', '').trim();
         widgets.add(
           Padding(
-            padding: const EdgeInsets.only(top: 12, bottom: 6),
+            padding: const EdgeInsets.only(top: 10, bottom: 4),
             child: Row(
               children: [
                 Container(
-                  width: 3,
-                  height: 16,
+                  width: 2,
+                  height: 12,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF60A5FA),
-                    borderRadius: BorderRadius.circular(2),
+                    color: AppColors.accentBlue,
+                    borderRadius: BorderRadius.circular(1),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     title,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF93C5FD),
-                      letterSpacing: 0.8,
+                    style: AppTextStyles.monoSmall.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.accentBlue,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ),
@@ -1048,22 +703,27 @@ class _HomeComponentState extends State<HomeComponent>
       } else if (trimmed.startsWith('- ')) {
         widgets.add(
           Padding(
-            padding: const EdgeInsets.only(left: 8, top: 2, bottom: 2),
+            padding: const EdgeInsets.only(left: 6, top: 1, bottom: 1),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Padding(
-                  padding: EdgeInsets.only(top: 5),
-                  child: Icon(Icons.circle, size: 4, color: Color(0xFF94A3B8)),
+                Padding(
+                  padding: const EdgeInsets.only(top: 5),
+                  child: Container(
+                    width: 3,
+                    height: 3,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     trimmed.substring(2),
-                    style: const TextStyle(
-                      fontSize: 12.5,
-                      color: Color(0xFFCBD5E1),
-                      height: 1.4,
+                    style: AppTextStyles.monoSmall.copyWith(
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ),
@@ -1077,25 +737,21 @@ class _HomeComponentState extends State<HomeComponent>
         final value = trimmed.substring(colonIndex + 1).trim();
         widgets.add(
           Padding(
-            padding: const EdgeInsets.only(left: 8, top: 2, bottom: 2),
+            padding: const EdgeInsets.only(left: 6, top: 1, bottom: 1),
             child: RichText(
               text: TextSpan(
                 children: [
                   TextSpan(
                     text: '$key: ',
-                    style: const TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFFE2E8F0),
-                      height: 1.4,
+                    style: AppTextStyles.monoSmall.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   TextSpan(
                     text: value,
-                    style: const TextStyle(
-                      fontSize: 12.5,
-                      color: Color(0xFF94A3B8),
-                      height: 1.4,
+                    style: AppTextStyles.monoSmall.copyWith(
+                      color: AppColors.textMuted,
                     ),
                   ),
                 ],
@@ -1109,10 +765,8 @@ class _HomeComponentState extends State<HomeComponent>
             padding: const EdgeInsets.symmetric(vertical: 1),
             child: Text(
               trimmed,
-              style: const TextStyle(
-                fontSize: 12.5,
-                color: Color(0xFFCBD5E1),
-                height: 1.4,
+              style: AppTextStyles.monoSmall.copyWith(
+                color: AppColors.textSecondary,
               ),
             ),
           ),

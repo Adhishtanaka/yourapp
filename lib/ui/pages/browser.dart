@@ -39,81 +39,40 @@ class _BrowserUIState extends State<BrowserUI> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceVariant,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              Icons.arrow_back_rounded,
-              color: AppColors.textPrimary,
-              size: 20,
-            ),
-          ),
+          icon: const Icon(Icons.arrow_back_rounded, size: 20),
           onPressed: () {
             HapticFeedback.lightImpact();
             Navigator.pop(context);
           },
         ),
-        title: Column(
-          children: [
-            Text(
-              'App Preview',
-              style: AppTextStyles.body.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            if (isLoading)
-              Text(
-                'Loading...',
-                style: AppTextStyles.caption.copyWith(
-                  color: AppColors.textMuted,
-                  fontSize: 11,
-                ),
-              ),
-          ],
-        ),
-        centerTitle: true,
+        title: Text('Preview', style: AppTextStyles.h3),
         actions: [
           IconButton(
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                Icons.refresh_rounded,
-                color: AppColors.textSecondary,
-                size: 20,
-              ),
-            ),
+            icon: const Icon(Icons.refresh_rounded, size: 18),
             onPressed: () {
               HapticFeedback.lightImpact();
               webViewController.reload();
             },
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
         ],
       ),
       body: Column(
         children: [
-          // Loading indicator
           if (isLoading)
             LinearProgressIndicator(
-              backgroundColor: AppColors.surfaceVariant,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.navy),
-              minHeight: 2,
+              backgroundColor: AppColors.border,
+              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accentBlue),
+              minHeight: 1.5,
             ),
           Expanded(
             child: Stack(
               children: [
                 Container(
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: AppColors.surface,
                     border: Border(
                       top: BorderSide(color: AppColors.border, width: 1),
@@ -148,11 +107,9 @@ class _BrowserUIState extends State<BrowserUI> {
                       final uri = navigationAction.request.url;
                       if (uri != null) {
                         final urlString = uri.toString();
-                        // Check if it's an external URL (not localhost/local content)
                         if (!urlString.startsWith('https://localhost') &&
                             !urlString.startsWith('about:') &&
                             !urlString.startsWith('data:')) {
-                          // Open external URLs in system browser or new webview
                           if (await canLaunchUrl(uri)) {
                             await launchUrl(uri,
                                 mode: LaunchMode.externalApplication);
@@ -163,7 +120,6 @@ class _BrowserUIState extends State<BrowserUI> {
                       return NavigationActionPolicy.ALLOW;
                     },
                     onCreateWindow: (controller, createWindowRequest) async {
-                      // Handle window.open() calls - open in external browser
                       final url = createWindowRequest.request.url;
                       if (url != null && await canLaunchUrl(url)) {
                         await launchUrl(url,
@@ -186,39 +142,15 @@ class _BrowserUIState extends State<BrowserUI> {
                 ),
                 if (isLoading)
                   Container(
-                    color: AppColors.surface,
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              color: AppColors.navy.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(14),
-                              child: CircularProgressIndicator(
-                                color: AppColors.navy,
-                                strokeWidth: 3,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            "Loading preview...",
-                            style: AppTextStyles.body.copyWith(
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            "Rendering your mobile app",
-                            style: AppTextStyles.caption,
-                          ),
-                        ],
+                    color: AppColors.background,
+                    child: const Center(
+                      child: SizedBox(
+                        width: 28,
+                        height: 28,
+                        child: CircularProgressIndicator(
+                          color: AppColors.accentBlue,
+                          strokeWidth: 2.5,
+                        ),
                       ),
                     ),
                   ),

@@ -24,6 +24,7 @@ dependencies:
   flutter_native_splash: ^2.4.4
   flutter_secure_storage: ^9.2.4
   flutter_launcher_icons: ^0.14.3
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:

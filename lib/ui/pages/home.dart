@@ -76,25 +76,22 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       bottomNavigationBar: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: AppColors.surface,
           border: Border(
-            top: BorderSide(
-              color: AppColors.border,
-              width: 1,
-            ),
+            top: BorderSide(color: AppColors.border, width: 1),
           ),
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildNavItem(
                   index: 0,
-                  icon: Icons.auto_awesome_outlined,
-                  activeIcon: Icons.auto_awesome_rounded,
+                  icon: Icons.terminal_rounded,
+                  activeIcon: Icons.terminal_rounded,
                   label: 'Build',
                 ),
                 _buildNavItem(
@@ -121,32 +118,33 @@ class _HomeScreenState extends State<HomeScreen> {
     return GestureDetector(
       onTap: () => _onItemTapped(index),
       behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.navy.withOpacity(0.08) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          border: Border(
+            top: BorderSide(
+              color: isSelected ? AppColors.accentBlue : Colors.transparent,
+              width: 2,
+            ),
+          ),
         ),
-        child: Row(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               isSelected ? activeIcon : icon,
-              color: isSelected ? AppColors.navy : AppColors.textMuted,
-              size: 22,
+              color: isSelected ? AppColors.accentBlue : AppColors.textMuted,
+              size: 20,
             ),
-            if (isSelected) ...[
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  color: AppColors.navy,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: AppTextStyles.caption.copyWith(
+                fontSize: 9,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                color: isSelected ? AppColors.accentBlue : AppColors.textMuted,
               ),
-            ],
+            ),
           ],
         ),
       ),

@@ -17,40 +17,37 @@ Future<void> showConfirmationDialog({
       return Dialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(6),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 48,
-                height: 48,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
-                  color: AppColors.navy.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.surfaceVariant,
+                  borderRadius: BorderRadius.circular(4),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.help_outline_rounded,
-                  color: AppColors.navy,
-                  size: 24,
+                  color: AppColors.accentBlue,
+                  size: 18,
                 ),
               ),
-              const SizedBox(height: 16),
-              Text(
-                title,
-                style: AppTextStyles.h3,
-              ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
+              Text(title, style: AppTextStyles.h3),
+              const SizedBox(height: 6),
               Text(
                 content,
-                style: AppTextStyles.body.copyWith(
+                style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.textSecondary,
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
@@ -58,19 +55,16 @@ Future<void> showConfirmationDialog({
                       onPressed: () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.textSecondary,
-                        side: BorderSide(color: AppColors.border),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: const BorderSide(color: AppColors.border),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                       ),
-                      child: Text(
-                        'Cancel',
-                        style: AppTextStyles.button,
-                      ),
+                      child: Text('Cancel', style: AppTextStyles.button),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
@@ -78,19 +72,17 @@ Future<void> showConfirmationDialog({
                         onConfirm();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.navy,
-                        foregroundColor: AppColors.textOnDark,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        backgroundColor: AppColors.accentBlue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                         elevation: 0,
                       ),
                       child: Text(
                         'Confirm',
-                        style: AppTextStyles.button.copyWith(
-                          color: AppColors.textOnDark,
-                        ),
+                        style: AppTextStyles.button.copyWith(color: Colors.white),
                       ),
                     ),
                   ),
@@ -117,59 +109,56 @@ Future<void> showApiKeyDialog(BuildContext context) async {
           return Dialog(
             backgroundColor: AppColors.surface,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(6),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: 36,
+                    height: 36,
                     decoration: BoxDecoration(
-                      color: AppColors.navy.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(12),
+                      color: AppColors.surfaceVariant,
+                      borderRadius: BorderRadius.circular(4),
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.key_rounded,
-                      color: AppColors.navy,
-                      size: 24,
+                      color: AppColors.accentBlue,
+                      size: 18,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
+                  Text('API Key Required', style: AppTextStyles.h3),
+                  const SizedBox(height: 6),
                   Text(
-                    'API Key Required',
-                    style: AppTextStyles.h3,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Enter your Gemini API key to enable AI features',
-                    style: AppTextStyles.body.copyWith(
+                    'Enter your Gemini API key',
+                    style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
                   Container(
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(10),
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(4),
                       border: Border.all(color: AppColors.border),
                     ),
                     child: TextField(
                       controller: apiKeyController,
                       obscureText: isObscured,
-                      style: AppTextStyles.body,
+                      style: AppTextStyles.mono,
                       decoration: InputDecoration(
-                        hintText: 'Enter your API key',
-                        hintStyle: AppTextStyles.body.copyWith(
+                        hintText: '> paste key',
+                        hintStyle: AppTextStyles.mono.copyWith(
                           color: AppColors.textMuted,
                         ),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
+                          horizontal: 12,
+                          vertical: 10,
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -177,7 +166,7 @@ Future<void> showApiKeyDialog(BuildContext context) async {
                                 ? Icons.visibility_outlined
                                 : Icons.visibility_off_outlined,
                             color: AppColors.textMuted,
-                            size: 20,
+                            size: 16,
                           ),
                           onPressed: () {
                             setState(() {
@@ -188,7 +177,7 @@ Future<void> showApiKeyDialog(BuildContext context) async {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -199,27 +188,33 @@ Future<void> showApiKeyDialog(BuildContext context) async {
                           Navigator.of(context).pop();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text("API Key saved successfully"),
-                              backgroundColor: AppColors.navy,
+                              content: Text(
+                                "API key saved",
+                                style: AppTextStyles.caption.copyWith(color: Colors.white),
+                              ),
+                              backgroundColor: AppColors.accentBlue,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              margin: const EdgeInsets.all(12),
                             ),
                           );
                           Phoenix.rebirth(context);
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.navy,
-                        foregroundColor: AppColors.textOnDark,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        backgroundColor: AppColors.accentBlue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                         elevation: 0,
                       ),
                       child: Text(
-                        'Save API Key',
-                        style: AppTextStyles.button.copyWith(
-                          color: AppColors.textOnDark,
-                        ),
+                        'Save',
+                        style: AppTextStyles.button.copyWith(color: Colors.white),
                       ),
                     ),
                   ),
@@ -239,60 +234,56 @@ void showErrorDialog(BuildContext context, String message) {
     builder: (context) => Dialog(
       backgroundColor: AppColors.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
                 color: AppColors.errorLight,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(4),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.error_outline_rounded,
                 color: AppColors.error,
-                size: 24,
+                size: 18,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Text(
               'Error',
-              style: AppTextStyles.h3.copyWith(
-                color: AppColors.error,
-              ),
+              style: AppTextStyles.h3.copyWith(color: AppColors.error),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               message,
-              style: AppTextStyles.body.copyWith(
+              style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textSecondary,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.navy,
-                  foregroundColor: AppColors.textOnDark,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  backgroundColor: AppColors.accentBlue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                   elevation: 0,
                 ),
                 child: Text(
                   'OK',
-                  style: AppTextStyles.button.copyWith(
-                    color: AppColors.textOnDark,
-                  ),
+                  style: AppTextStyles.button.copyWith(color: Colors.white),
                 ),
               ),
             ),

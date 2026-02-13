@@ -5,19 +5,13 @@ import 'package:yourapp/ui/pages/moreDetails.dart';
 
 Widget MoreDetailsWideget(BuildContext context, String path) {
   return Container(
-    decoration: BoxDecoration(
+    decoration: const BoxDecoration(
       color: AppColors.surface,
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 10,
-          offset: const Offset(0, -4),
-        ),
-      ],
+      border: Border(top: BorderSide(color: AppColors.border, width: 1)),
     ),
     child: SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: SizedBox(
           width: double.infinity,
           child: ElevatedButton(
@@ -28,45 +22,29 @@ Widget MoreDetailsWideget(BuildContext context, String path) {
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) => MoreDetailsScreen(path: path),
                   transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                    return SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0, 0.1),
-                        end: Offset.zero,
-                      ).animate(CurvedAnimation(
-                        parent: animation,
-                        curve: Curves.easeOut,
-                      )),
-                      child: FadeTransition(opacity: animation, child: child),
-                    );
+                    return FadeTransition(opacity: animation, child: child);
                   },
-                  transitionDuration: const Duration(milliseconds: 250),
+                  transitionDuration: const Duration(milliseconds: 200),
                 ),
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.navy,
-              foregroundColor: AppColors.textOnDark,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              backgroundColor: AppColors.accentBlue,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 10),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(4),
               ),
               elevation: 0,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.code_rounded,
-                  size: 20,
-                  color: AppColors.textOnDark,
-                ),
-                const SizedBox(width: 10),
+                const Icon(Icons.code_rounded, size: 16, color: Colors.white),
+                const SizedBox(width: 6),
                 Text(
-                  'View Code & Details',
-                  style: AppTextStyles.button.copyWith(
-                    color: AppColors.textOnDark,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  'Details',
+                  style: AppTextStyles.button.copyWith(color: Colors.white),
                 ),
               ],
             ),

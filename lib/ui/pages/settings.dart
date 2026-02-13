@@ -43,8 +43,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text("All records cleared successfully"),
-        backgroundColor: AppColors.navy,
+        content: Text("Records cleared", style: AppTextStyles.caption.copyWith(color: Colors.white)),
+        backgroundColor: AppColors.accentBlue,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+        margin: const EdgeInsets.all(12),
       ),
     );
   }
@@ -69,36 +72,29 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_rounded,
-            color: AppColors.textPrimary,
-          ),
+          icon: const Icon(Icons.arrow_back_rounded, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
-          'Settings',
-          style: AppTextStyles.h3,
-        ),
-        centerTitle: true,
+        title: Text('Settings', style: AppTextStyles.h3),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionTitle('API Configuration'),
-            const SizedBox(height: 12),
+            _buildSectionTitle('API'),
+            const SizedBox(height: 6),
             _buildApiCard(),
-            const SizedBox(height: 28),
-            _buildSectionTitle('Data Management'),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
+            _buildSectionTitle('Data'),
+            const SizedBox(height: 6),
             _buildDataManagementCard(),
-            const SizedBox(height: 28),
+            const SizedBox(height: 16),
             _buildSectionTitle('About'),
-            const SizedBox(height: 12),
+            const SizedBox(height: 6),
             _buildAboutCard(),
           ],
         ),
@@ -108,14 +104,12 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.only(left: 4),
+      padding: const EdgeInsets.only(left: 2),
       child: Text(
-        title,
-        style: AppTextStyles.label.copyWith(
+        title.toUpperCase(),
+        style: AppTextStyles.monoSmall.copyWith(
           color: AppColors.textMuted,
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.5,
+          letterSpacing: 1.0,
         ),
       ),
     );
@@ -125,54 +119,44 @@ class _SettingsPageState extends State<SettingsPage> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(color: AppColors.border, width: 1),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () => showApiKeyDialog(context),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(4),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
               children: [
                 Container(
-                  width: 44,
-                  height: 44,
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
-                    color: AppColors.navy.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(10),
+                    color: AppColors.surfaceVariant,
+                    borderRadius: BorderRadius.circular(4),
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.key_rounded,
-                    color: AppColors.navy,
-                    size: 22,
+                    color: AppColors.accentBlue,
+                    size: 18,
                   ),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Gemini API Key',
-                        style: AppTextStyles.body.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Configure your API key for AI features',
-                        style: AppTextStyles.caption,
-                      ),
-                    ],
+                  child: Text(
+                    'Gemini API Key',
+                    style: AppTextStyles.body.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
-                Icon(
-                  Icons.chevron_right_rounded,
+                const Icon(
+                  Icons.chevron_right,
                   color: AppColors.textMuted,
-                  size: 22,
+                  size: 16,
                 ),
               ],
             ),
@@ -186,7 +170,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(color: AppColors.border, width: 1),
       ),
       child: Column(
@@ -194,37 +178,31 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildDataOption(
             icon: Icons.delete_outline_rounded,
             iconColor: AppColors.textSecondary,
-            title: 'Clear All Records',
-            subtitle: 'Remove all saved HTML files',
+            title: 'Clear Records',
             onTap: _isClearingRecords
                 ? null
                 : () {
                     showConfirmationDialog(
                       context: context,
                       title: "Clear Records",
-                      content: "Are you sure you want to clear all saved records? This action cannot be undone.",
+                      content: "Remove all saved records? This cannot be undone.",
                       onConfirm: clearAllRecords,
                     );
                   },
             isLoading: _isClearingRecords,
           ),
-          Divider(
-            height: 1,
-            color: AppColors.border,
-            indent: 74,
-          ),
+          const Divider(height: 1, color: AppColors.border, indent: 58),
           _buildDataOption(
             icon: Icons.delete_forever_rounded,
             iconColor: AppColors.error,
             title: 'Reset App',
-            subtitle: 'Clear all data including API key',
             onTap: _isResetting
                 ? null
                 : () {
                     showConfirmationDialog(
                       context: context,
                       title: "Reset App",
-                      content: "This will delete all data and close the app. Are you sure?",
+                      content: "Delete all data and close app?",
                       onConfirm: clearAllData,
                     );
                   },
@@ -240,7 +218,6 @@ class _SettingsPageState extends State<SettingsPage> {
     required IconData icon,
     required Color iconColor,
     required String title,
-    required String subtitle,
     required VoidCallback? onTap,
     bool isDestructive = false,
     bool isLoading = false,
@@ -249,55 +226,47 @@ class _SettingsPageState extends State<SettingsPage> {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(4),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Row(
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
                   color: isDestructive
                       ? AppColors.errorLight
                       : AppColors.surfaceVariant,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(4),
                 ),
                 child: isLoading
-                    ? CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: iconColor,
+                    ? Center(
+                        child: SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 1.5,
+                            color: iconColor,
+                          ),
+                        ),
                       )
-                    : Icon(
-                        icon,
-                        color: iconColor,
-                        size: 22,
-                      ),
+                    : Icon(icon, color: iconColor, size: 18),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 10),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: AppTextStyles.body.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: isDestructive ? AppColors.error : AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: AppTextStyles.caption,
-                    ),
-                  ],
+                child: Text(
+                  title,
+                  style: AppTextStyles.body.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: isDestructive ? AppColors.error : AppColors.textPrimary,
+                  ),
                 ),
               ),
               Icon(
-                Icons.chevron_right_rounded,
+                Icons.chevron_right,
                 color: AppColors.textMuted,
-                size: 22,
+                size: 16,
               ),
             ],
           ),
@@ -310,48 +279,37 @@ class _SettingsPageState extends State<SettingsPage> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(color: AppColors.border, width: 1),
       ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
+      padding: const EdgeInsets.all(16),
+      child: Row(
         children: [
           Container(
-            width: 56,
-            height: 56,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
-              color: AppColors.navy,
-              borderRadius: BorderRadius.circular(14),
+              color: AppColors.accentBlue,
+              borderRadius: BorderRadius.circular(4),
             ),
-            child: Icon(
-              Icons.auto_awesome_rounded,
-              color: AppColors.textOnDark,
-              size: 28,
+            child: const Icon(
+              Icons.terminal_rounded,
+              color: Colors.white,
+              size: 18,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('yourapp', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
+              Text('v1.0.0', style: AppTextStyles.monoSmall.copyWith(color: AppColors.textMuted)),
+            ],
+          ),
+          const Spacer(),
           Text(
-            'yourapp',
-            style: AppTextStyles.h3,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Version 1.0.0',
-            style: AppTextStyles.caption,
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceVariant,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              'Made by Adhishtanaka',
-              style: AppTextStyles.caption.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
+            'adhishtanaka',
+            style: AppTextStyles.monoSmall.copyWith(color: AppColors.textMuted),
           ),
         ],
       ),

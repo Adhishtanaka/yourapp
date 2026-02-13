@@ -98,7 +98,7 @@ class _SavedComponentState extends State<SavedComponent> {
   }
 
   void _openFile(String path, String? id) async {
-    if (loadingFileId != null) return; // Prevent multiple taps
+    if (loadingFileId != null) return;
 
     HapticFeedback.lightImpact();
 
@@ -107,7 +107,6 @@ class _SavedComponentState extends State<SavedComponent> {
     });
 
     try {
-      // Small delay for visual feedback
       await Future.delayed(const Duration(milliseconds: 100));
 
       File file = File(path);
@@ -141,18 +140,11 @@ class _SavedComponentState extends State<SavedComponent> {
         HapticFeedback.heavyImpact();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.error_outline, color: Colors.white, size: 20),
-                const SizedBox(width: 12),
-                Text("File not found"),
-              ],
-            ),
+            content: const Text("File not found"),
             backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            margin: const EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+            margin: const EdgeInsets.all(12),
           ),
         );
       }
@@ -163,18 +155,11 @@ class _SavedComponentState extends State<SavedComponent> {
       HapticFeedback.heavyImpact();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.error_outline, color: Colors.white, size: 20),
-              const SizedBox(width: 12),
-              Text("Error opening file"),
-            ],
-          ),
+          content: const Text("Error opening file"),
           backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          margin: const EdgeInsets.all(12),
         ),
       );
     }
@@ -188,28 +173,19 @@ class _SavedComponentState extends State<SavedComponent> {
           _buildHeader(),
           if (!isLoading && savedHtmlFiles.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Row(
                 children: [
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.navy.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      "${filteredFiles.length} app${filteredFiles.length != 1 ? 's' : ''}",
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.navy,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  Text(
+                    "${filteredFiles.length} app${filteredFiles.length != 1 ? 's' : ''}",
+                    style: AppTextStyles.monoSmall.copyWith(
+                      color: AppColors.accentBlue,
                     ),
                   ),
                 ],
               ),
             ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Expanded(
             child: isLoading
                 ? _buildLoadingState()
@@ -224,61 +200,63 @@ class _SavedComponentState extends State<SavedComponent> {
 
   Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
       child: Row(
         children: [
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
+                color: AppColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(4),
                 border: Border.all(color: AppColors.border, width: 1),
               ),
               child: TextField(
                 controller: _searchController,
                 onChanged: _search,
-                style: AppTextStyles.body,
+                style: AppTextStyles.mono,
                 decoration: InputDecoration(
-                  hintText: "Search projects...",
-                  prefixIcon: Icon(
+                  hintText: "> search",
+                  prefixIcon: const Icon(
                     Icons.search_rounded,
                     color: AppColors.textMuted,
-                    size: 20,
+                    size: 16,
                   ),
-                  hintStyle: AppTextStyles.body.copyWith(
+                  hintStyle: AppTextStyles.mono.copyWith(
                     color: AppColors.textMuted,
                   ),
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(
-                    vertical: 12,
-                    horizontal: 16,
+                    vertical: 10,
+                    horizontal: 12,
                   ),
                   isDense: true,
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
           Container(
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(12),
+              color: AppColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(4),
               border: Border.all(color: AppColors.border, width: 1),
             ),
             child: IconButton(
-              icon: Icon(
+              icon: const Icon(
                 Icons.settings_outlined,
                 color: AppColors.textSecondary,
-                size: 22,
+                size: 18,
               ),
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => SettingsPage(),
+                    builder: (context) => const SettingsPage(),
                   ),
                 );
               },
+              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+              padding: EdgeInsets.zero,
               tooltip: 'Settings',
             ),
           ),
@@ -288,24 +266,14 @@ class _SavedComponentState extends State<SavedComponent> {
   }
 
   Widget _buildLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 40,
-            height: 40,
-            child: CircularProgressIndicator(
-              color: AppColors.navy,
-              strokeWidth: 3,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            "Loading saved apps...",
-            style: AppTextStyles.bodySmall,
-          ),
-        ],
+    return const Center(
+      child: SizedBox(
+        width: 24,
+        height: 24,
+        child: CircularProgressIndicator(
+          color: AppColors.accentBlue,
+          strokeWidth: 2,
+        ),
       ),
     );
   }
@@ -313,81 +281,37 @@ class _SavedComponentState extends State<SavedComponent> {
   Widget _buildEmptyState() {
     final hasSearchQuery = _searchController.text.isNotEmpty;
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Icon(
-                hasSearchQuery
-                    ? Icons.search_off_rounded
-                    : Icons.folder_open_rounded,
-                size: 48,
-                color: AppColors.textMuted,
-              ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(4),
             ),
-            const SizedBox(height: 24),
-            Text(
-              hasSearchQuery ? "No results found" : "No projects yet",
-              style: AppTextStyles.h3.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
+            child: Icon(
               hasSearchQuery
-                  ? "Try a different search term"
-                  : "Projects you build will appear here",
-              textAlign: TextAlign.center,
-              style: AppTextStyles.body.copyWith(
-                color: AppColors.textMuted,
-              ),
+                  ? Icons.search_off_rounded
+                  : Icons.folder_open_rounded,
+              size: 24,
+              color: AppColors.textMuted,
             ),
-            if (!hasSearchQuery) ...[
-              const SizedBox(height: 24),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: AppColors.navy.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.lightbulb_outline,
-                      size: 16,
-                      color: AppColors.navy,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      "Tap Build to create your first app",
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.navy,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ],
-        ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            hasSearchQuery ? "No results" : "No projects yet",
+            style: AppTextStyles.bodySmall,
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildFilesList() {
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
       itemCount: filteredFiles.length,
       itemBuilder: (context, index) {
         final file = filteredFiles[index];
@@ -399,13 +323,9 @@ class _SavedComponentState extends State<SavedComponent> {
   Widget _buildFileCard(Map<String, String> file, int index) {
     final isLoadingThis = loadingFileId == file["id"];
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isLoadingThis ? AppColors.navy : AppColors.border,
-          width: isLoadingThis ? 1.5 : 1,
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: AppColors.border, width: 0.5),
         ),
       ),
       child: Material(
@@ -414,75 +334,39 @@ class _SavedComponentState extends State<SavedComponent> {
           onTap: isLoadingThis
               ? null
               : () => _openFile(file["path"] ?? "", file["id"]),
-          borderRadius: BorderRadius.circular(14),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
               children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: AppColors.navy.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: isLoadingThis
-                      ? Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AppColors.navy,
-                          ),
-                        )
-                      : Icon(
-                          Icons.code_rounded,
-                          color: AppColors.navy,
-                          size: 22,
-                        ),
+                Icon(
+                  Icons.html_rounded,
+                  color: AppColors.accentBlue,
+                  size: 18,
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        file["prompt"] ?? "Untitled",
-                        style: AppTextStyles.body.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        isLoadingThis ? "Opening..." : "Tap to open",
-                        style: AppTextStyles.caption.copyWith(
-                          color: isLoadingThis
-                              ? AppColors.navy
-                              : AppColors.textMuted,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    file["prompt"] ?? "Untitled",
+                    style: AppTextStyles.body,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: isLoadingThis
-                        ? AppColors.navy.withOpacity(0.1)
-                        : AppColors.surfaceVariant,
-                    borderRadius: BorderRadius.circular(8),
+                if (isLoadingThis)
+                  const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 1.5,
+                      color: AppColors.accentBlue,
+                    ),
+                  )
+                else
+                  const Icon(
+                    Icons.chevron_right,
+                    size: 16,
+                    color: AppColors.textMuted,
                   ),
-                  child: Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: isLoadingThis
-                        ? AppColors.navy
-                        : AppColors.textSecondary,
-                  ),
-                ),
               ],
             ),
           ),

@@ -42,10 +42,9 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
       if (data["path"] == widget.path) {
         File file = File(data["path"]);
         if (await file.exists()) {
-          // Load spec file if it exists
           final fo = FileOperations();
           final spec = await fo.loadSpec(data["path"]);
-          
+
           setState(() {
             _htmlContent = file.readAsStringSync();
             _prompt = data["prompt"];
@@ -56,7 +55,7 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
         break;
       }
     }
-    
+
     if (_isLoading) {
       setState(() {
         _isLoading = false;
@@ -85,7 +84,6 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
     if (await file.exists()) {
       await file.delete();
     }
-    // Also delete spec file if it exists
     final specPath = widget.path.replaceAll('.html', '.spec.txt');
     File specFile = File(specPath);
     if (await specFile.exists()) {
@@ -118,20 +116,13 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_rounded,
-            color: AppColors.textPrimary,
-          ),
+          icon: const Icon(Icons.arrow_back_rounded, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
-          'Code Details',
-          style: AppTextStyles.h3,
-        ),
-        centerTitle: true,
+        title: Text('Details', style: AppTextStyles.h3),
       ),
       body: _isLoading
           ? _buildLoadingState()
@@ -142,24 +133,14 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
   }
 
   Widget _buildLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 40,
-            height: 40,
-            child: CircularProgressIndicator(
-              color: AppColors.navy,
-              strokeWidth: 3,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            "Loading code...",
-            style: AppTextStyles.bodySmall,
-          ),
-        ],
+    return const Center(
+      child: SizedBox(
+        width: 24,
+        height: 24,
+        child: CircularProgressIndicator(
+          color: AppColors.accentBlue,
+          strokeWidth: 2,
+        ),
       ),
     );
   }
@@ -170,31 +151,22 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 80,
-            height: 80,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
               color: AppColors.errorLight,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(4),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.error_outline_rounded,
-              size: 40,
+              size: 24,
               color: AppColors.error,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
           Text(
             "File not found",
-            style: AppTextStyles.h3.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "The requested file could not be loaded",
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textMuted,
-            ),
+            style: AppTextStyles.bodySmall,
           ),
         ],
       ),
@@ -207,40 +179,25 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
         // Prompt header
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: const BoxDecoration(
             color: AppColors.surface,
             border: Border(
               bottom: BorderSide(color: AppColors.border, width: 1),
             ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Prompt',
-                style: AppTextStyles.caption.copyWith(
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _prompt ?? "No prompt available",
-                style: AppTextStyles.body.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+          child: Text(
+            _prompt ?? "Untitled",
+            style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w500),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
-        // Spec/Code toggle (only show if spec exists)
-        if (_specContent != null) ...[
+        // Spec/Code toggle (tab-style)
+        if (_specContent != null)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: const BoxDecoration(
               color: AppColors.surface,
               border: Border(
                 bottom: BorderSide(color: AppColors.border, width: 1),
@@ -248,23 +205,20 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
             ),
             child: Row(
               children: [
-                _buildToggleButton(
-                  label: 'Spec',
-                  icon: Icons.description_outlined,
+                _buildTab(
+                  label: 'spec.md',
                   isActive: _showSpec,
                   onTap: () => setState(() => _showSpec = true),
                 ),
-                const SizedBox(width: 8),
-                _buildToggleButton(
-                  label: 'Code',
-                  icon: Icons.code_rounded,
+                const SizedBox(width: 16),
+                _buildTab(
+                  label: 'index.html',
                   isActive: !_showSpec,
                   onTap: () => setState(() => _showSpec = false),
                 ),
               ],
             ),
           ),
-        ],
         // Content viewer
         Expanded(
           child: _showSpec && _specContent != null
@@ -273,7 +227,7 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
         ),
         // Action buttons
         Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: AppColors.surface,
             border: Border(
               top: BorderSide(color: AppColors.border, width: 1),
@@ -281,7 +235,7 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
           ),
           child: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
                   Expanded(
@@ -302,71 +256,61 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.navy,
-                        foregroundColor: AppColors.textOnDark,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: AppColors.accentBlue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                         elevation: 0,
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.edit_rounded,
-                            size: 18,
-                            color: AppColors.textOnDark,
-                          ),
-                          const SizedBox(width: 8),
+                          const Icon(Icons.edit_rounded, size: 16, color: Colors.white),
+                          const SizedBox(width: 6),
                           Text(
                             'Edit',
-                            style: AppTextStyles.button.copyWith(
-                              color: AppColors.textOnDark,
-                            ),
+                            style: AppTextStyles.button.copyWith(color: Colors.white),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  ElevatedButton(
-                    onPressed: _isDeleting
-                        ? null
-                        : () {
-                            showConfirmationDialog(
-                              context: context,
-                              title: "Delete App",
-                              content: "Are you sure you want to delete this app? This action cannot be undone.",
-                              onConfirm: _deleteHtml,
-                            );
-                          },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _isDeleting ? AppColors.surfaceVariant : AppColors.errorLight,
-                      foregroundColor: AppColors.error,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 16,
-                        horizontal: 20,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
+                  const SizedBox(width: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.errorLight,
+                      borderRadius: BorderRadius.circular(4),
                     ),
-                    child: _isDeleting
-                        ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
+                    child: IconButton(
+                      onPressed: _isDeleting
+                          ? null
+                          : () {
+                              showConfirmationDialog(
+                                context: context,
+                                title: "Delete",
+                                content: "Delete this app permanently?",
+                                onConfirm: _deleteHtml,
+                              );
+                            },
+                      icon: _isDeleting
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 1.5,
+                                color: AppColors.error,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.delete_outline_rounded,
+                              size: 18,
                               color: AppColors.error,
                             ),
-                          )
-                        : Icon(
-                            Icons.delete_outline_rounded,
-                            size: 20,
-                            color: AppColors.error,
-                          ),
+                      constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                      padding: EdgeInsets.zero,
+                    ),
                   ),
                 ],
               ),
@@ -377,41 +321,29 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
     );
   }
 
-  Widget _buildToggleButton({
+  Widget _buildTab({
     required String label,
-    required IconData icon,
     required bool isActive,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.navy : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isActive ? AppColors.navy : AppColors.border,
-            width: 1,
+          border: Border(
+            bottom: BorderSide(
+              color: isActive ? AppColors.accentBlue : Colors.transparent,
+              width: 2,
+            ),
           ),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 16,
-              color: isActive ? AppColors.textOnDark : AppColors.textMuted,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: AppTextStyles.caption.copyWith(
-                color: isActive ? AppColors.textOnDark : AppColors.textMuted,
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-              ),
-            ),
-          ],
+        child: Text(
+          label,
+          style: AppTextStyles.monoSmall.copyWith(
+            color: isActive ? AppColors.accentBlue : AppColors.textMuted,
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+          ),
         ),
       ),
     );
@@ -419,14 +351,10 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
 
   Widget _buildSpecViewer() {
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.navy,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border, width: 1),
-      ),
+      margin: const EdgeInsets.all(0),
+      color: AppColors.background,
       child: SingleChildScrollView(
+        padding: const EdgeInsets.all(12),
         child: _buildFormattedSpec(_specContent!),
       ),
     );
@@ -439,50 +367,71 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
       children: lines.map((line) {
         if (line.startsWith('# ')) {
           return Padding(
-            padding: const EdgeInsets.only(bottom: 8, top: 4),
+            padding: const EdgeInsets.only(bottom: 6, top: 4),
             child: Text(
               line.substring(2),
-              style: AppTextStyles.h2.copyWith(
-                color: AppColors.textOnDark,
-                fontSize: 18,
+              style: AppTextStyles.mono.copyWith(
+                color: AppColors.accentBlue,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
               ),
             ),
           );
         } else if (line.startsWith('## ')) {
           return Padding(
-            padding: const EdgeInsets.only(bottom: 6, top: 8),
-            child: Text(
-              line.substring(3),
-              style: AppTextStyles.h3.copyWith(
-                color: AppColors.textOnDark,
-                fontSize: 15,
-              ),
+            padding: const EdgeInsets.only(bottom: 4, top: 8),
+            child: Row(
+              children: [
+                Container(
+                  width: 2,
+                  height: 14,
+                  color: AppColors.accentBlue,
+                  margin: const EdgeInsets.only(right: 8),
+                ),
+                Expanded(
+                  child: Text(
+                    line.substring(3),
+                    style: AppTextStyles.mono.copyWith(
+                      color: AppColors.textPrimary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         } else if (line.startsWith('- ') || line.startsWith('• ')) {
           return Padding(
-            padding: const EdgeInsets.only(left: 12, bottom: 3),
+            padding: const EdgeInsets.only(left: 10, bottom: 2),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('• ', style: TextStyle(color: AppColors.slateMuted, fontSize: 14)),
+                Text('·', style: AppTextStyles.monoSmall.copyWith(color: AppColors.textMuted)),
+                const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     line.substring(2),
-                    style: TextStyle(color: AppColors.textOnDark.withOpacity(0.85), fontSize: 13, height: 1.4),
+                    style: AppTextStyles.monoSmall.copyWith(
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                    ),
                   ),
                 ),
               ],
             ),
           );
         } else if (line.trim().isEmpty) {
-          return const SizedBox(height: 6);
+          return const SizedBox(height: 4);
         } else {
           return Padding(
-            padding: const EdgeInsets.only(bottom: 4),
+            padding: const EdgeInsets.only(bottom: 2),
             child: Text(
               line,
-              style: TextStyle(color: AppColors.textOnDark.withOpacity(0.9), fontSize: 13, height: 1.5),
+              style: AppTextStyles.monoSmall.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.5,
+              ),
             ),
           );
         }
@@ -492,23 +441,18 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
 
   Widget _buildCodeViewer() {
     return Container(
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF282C34),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border, width: 1),
+      margin: const EdgeInsets.all(0),
+      decoration: const BoxDecoration(
+        color: Color(0xFF1E1E1E),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(13),
+      child: ClipRect(
         child: SingleChildScrollView(
           child: HighlightView(
             cleanHtml(_htmlContent!),
             language: 'html',
             theme: atomOneDarkTheme,
-            padding: const EdgeInsets.all(16),
-            textStyle: const TextStyle(
-              fontSize: 13,
-              fontFamily: 'monospace',
+            padding: const EdgeInsets.all(12),
+            textStyle: AppTextStyles.monoSmall.copyWith(
               height: 1.5,
             ),
           ),
