@@ -82,7 +82,8 @@ Future<void> showConfirmationDialog({
                       ),
                       child: Text(
                         'Confirm',
-                        style: AppTextStyles.button.copyWith(color: Colors.white),
+                        style:
+                            AppTextStyles.button.copyWith(color: Colors.white),
                       ),
                     ),
                   ),
@@ -185,12 +186,14 @@ Future<void> showApiKeyDialog(BuildContext context) async {
                         String apiKey = apiKeyController.text.trim();
                         if (apiKey.isNotEmpty) {
                           await storage.write(key: "api_key", value: apiKey);
+                          if (!context.mounted) return;
                           Navigator.of(context).pop();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
                                 "API key saved",
-                                style: AppTextStyles.caption.copyWith(color: Colors.white),
+                                style: AppTextStyles.caption
+                                    .copyWith(color: Colors.white),
                               ),
                               backgroundColor: AppColors.accentBlue,
                               behavior: SnackBarBehavior.floating,
@@ -214,7 +217,8 @@ Future<void> showApiKeyDialog(BuildContext context) async {
                       ),
                       child: Text(
                         'Save',
-                        style: AppTextStyles.button.copyWith(color: Colors.white),
+                        style:
+                            AppTextStyles.button.copyWith(color: Colors.white),
                       ),
                     ),
                   ),

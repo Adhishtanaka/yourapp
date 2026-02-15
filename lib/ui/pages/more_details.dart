@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:yourapp/ui/theme/app_theme.dart';
 import 'package:yourapp/ui/pages/home.dart';
 import 'package:yourapp/ui/pages/browser.dart';
-import 'package:yourapp/ui/components/savedWidget.dart';
+import 'package:yourapp/ui/components/saved_widget.dart';
 import 'package:yourapp/utils/file_operations.dart';
 import 'package:flutter_highlight/flutter_highlight.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_highlight/themes/atom-one-dark.dart';
-import 'package:yourapp/ui/components/alertDialogWidget.dart';
+import 'package:yourapp/ui/components/alert_dialog_widget.dart';
 
 class MoreDetailsScreen extends StatefulWidget {
   final String path;
@@ -267,11 +267,13 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.edit_rounded, size: 16, color: Colors.white),
+                          const Icon(Icons.edit_rounded,
+                              size: 16, color: Colors.white),
                           const SizedBox(width: 6),
                           Text(
                             'Edit',
-                            style: AppTextStyles.button.copyWith(color: Colors.white),
+                            style: AppTextStyles.button
+                                .copyWith(color: Colors.white),
                           ),
                         ],
                       ),
@@ -308,7 +310,8 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
                               size: 18,
                               color: AppColors.error,
                             ),
-                      constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                      constraints:
+                          const BoxConstraints(minWidth: 40, minHeight: 40),
                       padding: EdgeInsets.zero,
                     ),
                   ),
@@ -407,7 +410,9 @@ class _MoreDetailsScreenState extends State<MoreDetailsScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('·', style: AppTextStyles.monoSmall.copyWith(color: AppColors.textMuted)),
+                Text('·',
+                    style: AppTextStyles.monoSmall
+                        .copyWith(color: AppColors.textMuted)),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(

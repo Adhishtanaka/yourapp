@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:yourapp/ui/theme/app_theme.dart';
-import 'package:yourapp/ui/components/homeSection.dart';
-import 'package:yourapp/ui/components/savedSection.dart';
+import 'package:yourapp/ui/components/home_section.dart';
+import 'package:yourapp/ui/components/saved_section.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:yourapp/ui/components/alertDialogWidget.dart';
+import 'package:yourapp/ui/components/alert_dialog_widget.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class HomeScreen extends StatefulWidget {

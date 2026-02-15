@@ -4,20 +4,21 @@ import 'package:yourapp/ui/theme/app_theme.dart';
 import 'package:yourapp/ui/pages/browser.dart';
 import 'package:yourapp/utils/ai_operations.dart';
 import 'package:yourapp/utils/file_operations.dart';
-import 'package:yourapp/ui/components/alertDialogWidget.dart';
+import 'package:yourapp/ui/components/alert_dialog_widget.dart';
 
 class SavedWidget extends StatefulWidget {
   final String prompt;
   final String html;
   final String? spec;
 
-  const SavedWidget({super.key, required this.prompt, required this.html, this.spec});
+  const SavedWidget(
+      {super.key, required this.prompt, required this.html, this.spec});
 
   @override
-  _SavedWidgetState createState() => _SavedWidgetState();
+  State<SavedWidget> createState() => SavedWidgetState();
 }
 
-class _SavedWidgetState extends State<SavedWidget> {
+class SavedWidgetState extends State<SavedWidget> {
   late TextEditingController _controller;
   final gemini = AIOperations();
   bool _isLoading = false;
@@ -68,7 +69,8 @@ class _SavedWidgetState extends State<SavedWidget> {
       MaterialPageRoute(
         builder: (context) => BrowserUI(
           html: newHtmlCode!,
-          bottomWidget: SavedWidget(prompt: widget.prompt, html: newHtmlCode, spec: widget.spec),
+          bottomWidget: SavedWidget(
+              prompt: widget.prompt, html: newHtmlCode, spec: widget.spec),
         ),
       ),
     );
@@ -107,7 +109,8 @@ class _SavedWidgetState extends State<SavedWidget> {
                             color: AppColors.textMuted,
                           ),
                           border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                          contentPadding:
+                              const EdgeInsets.symmetric(vertical: 10),
                           isDense: true,
                         ),
                       ),
@@ -115,7 +118,8 @@ class _SavedWidgetState extends State<SavedWidget> {
                     const SizedBox(width: 6),
                     _isLoading
                         ? Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 6),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -138,7 +142,8 @@ class _SavedWidgetState extends State<SavedWidget> {
                             ),
                           )
                         : IconButton(
-                            onPressed: _controller.text.isEmpty ? null : _handleSubmit,
+                            onPressed:
+                                _controller.text.isEmpty ? null : _handleSubmit,
                             icon: Container(
                               width: 28,
                               height: 28,
@@ -156,7 +161,8 @@ class _SavedWidgetState extends State<SavedWidget> {
                                 size: 16,
                               ),
                             ),
-                            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                            constraints: const BoxConstraints(
+                                minWidth: 36, minHeight: 36),
                             padding: EdgeInsets.zero,
                           ),
                     const SizedBox(width: 6),
@@ -176,7 +182,8 @@ class _SavedWidgetState extends State<SavedWidget> {
                             content: "Save this app to your collection?",
                             onConfirm: () {
                               FileOperations fo = FileOperations();
-                              fo.saveHtml(widget.prompt, widget.html, context, spec: widget.spec);
+                              fo.saveHtml(widget.prompt, widget.html, context,
+                                  spec: widget.spec);
                             },
                           );
                         },
@@ -194,7 +201,9 @@ class _SavedWidgetState extends State<SavedWidget> {
                     children: [
                       const Icon(Icons.bookmark_add_outlined, size: 16),
                       const SizedBox(width: 6),
-                      Text('Save', style: AppTextStyles.button.copyWith(color: Colors.white)),
+                      Text('Save',
+                          style: AppTextStyles.button
+                              .copyWith(color: Colors.white)),
                     ],
                   ),
                 ),

@@ -1,19 +1,46 @@
 import 'package:firebase_ai/firebase_ai.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:firebase_core/firebase_core.dart';
-import '../firebase_options.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AIOperations {
   late final GenerativeModel model;
-  final FlutterSecureStorage _storage = FlutterSecureStorage();
+  static const String defaultModel = 'gemini-2.5-flash';
+  static const String modelKey = 'ai_model';
 
   AIOperations() {
     _initialize();
   }
 
   Future<void> _initialize() async {
-    model = FirebaseAI.googleAI().generativeModel(model: 'gemini-2.5-flash');
+    final prefs = await SharedPreferences.getInstance();
+    final modelName = prefs.getString(modelKey) ?? defaultModel;
+    model = FirebaseAI.googleAI().generativeModel(model: modelName);
+  }
+
+  Future<void> updateModel(String modelName) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(modelKey, modelName);
+    model = FirebaseAI.googleAI().generativeModel(model: modelName);
+  }
+
+  static Future<String> getCurrentModel() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(modelKey) ?? defaultModel;
+  }
+
+  Future<String?> fixError(String error, String code) async {
+    final fixPrompt = '''
+Fix this JavaScript/React code error. The error is:
+$error
+
+Current code:
+$code
+
+Respond with the COMPLETE fixed code (the entire HTML file with fixes applied).
+''';
+
+    final content = [Content.text(fixPrompt)];
+    final response = await model.generateContent(content);
+    return response.text?.trim();
   }
 
   Future<String?> getPrompt(String prompt) async {
@@ -618,7 +645,7 @@ class AIOperations {
     return response.text;
   }
 
-  Future<String?> editCode(String html,String feature) async {
+  Future<String?> editCode(String html, String feature) async {
     final prompt = '''
     I am an expert code modification specialist focusing on enhancing and extending existing applications. I transform your change requests into complete, production-ready implementations while maintaining the original architecture, style, and best practices.
   
@@ -1010,8 +1037,8 @@ class AIOperations {
   IMPORTANT: The response must be the complete, ready-to-use code with all changes fully implemented.
   ''';
 
-      final content = [Content.text(prompt)];
-      final response = await model.generateContent(content);
-      return response.text;
-    }
+    final content = [Content.text(prompt)];
+    final response = await model.generateContent(content);
+    return response.text;
+  }
 }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:yourapp/ui/theme/app_theme.dart';
-import 'package:yourapp/ui/pages/moreDetails.dart';
+import 'package:yourapp/ui/pages/more_details.dart';
 
-Widget MoreDetailsWideget(BuildContext context, String path) {
+Widget moreDetailsWidget(BuildContext context, String path) {
   return Container(
     decoration: const BoxDecoration(
       color: AppColors.surface,
@@ -20,8 +20,10 @@ Widget MoreDetailsWideget(BuildContext context, String path) {
               Navigator.push(
                 context,
                 PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => MoreDetailsScreen(path: path),
-                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      MoreDetailsScreen(path: path),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
                     return FadeTransition(opacity: animation, child: child);
                   },
                   transitionDuration: const Duration(milliseconds: 200),

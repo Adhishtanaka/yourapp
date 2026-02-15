@@ -6,16 +6,16 @@ import 'package:yourapp/ui/theme/app_theme.dart';
 import 'package:yourapp/ui/pages/browser.dart';
 import 'package:yourapp/ui/pages/settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yourapp/ui/components/moreDetailsWidget.dart';
+import 'package:yourapp/ui/components/more_details_widget.dart';
 
 class SavedComponent extends StatefulWidget {
   const SavedComponent({super.key});
 
   @override
-  _SavedComponentState createState() => _SavedComponentState();
+  State<SavedComponent> createState() => SavedComponentState();
 }
 
-class _SavedComponentState extends State<SavedComponent> {
+class SavedComponentState extends State<SavedComponent> {
   List<Map<String, String>> savedHtmlFiles = [];
   List<Map<String, String>> filteredFiles = [];
   bool isLoading = true;
@@ -113,18 +113,18 @@ class _SavedComponentState extends State<SavedComponent> {
       if (await file.exists()) {
         String content = await file.readAsString();
 
-        if (!mounted) return;
-
         setState(() {
           loadingFileId = null;
         });
+
+        if (!mounted) return;
 
         Navigator.push(
           context,
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) => BrowserUI(
               html: content,
-              bottomWidget: MoreDetailsWideget(context, path),
+              bottomWidget: moreDetailsWidget(context, path),
             ),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
@@ -138,12 +138,14 @@ class _SavedComponentState extends State<SavedComponent> {
           loadingFileId = null;
         });
         HapticFeedback.heavyImpact();
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text("File not found"),
             backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
             margin: const EdgeInsets.all(12),
           ),
         );
@@ -153,6 +155,7 @@ class _SavedComponentState extends State<SavedComponent> {
         loadingFileId = null;
       });
       HapticFeedback.heavyImpact();
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text("Error opening file"),

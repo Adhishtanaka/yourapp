@@ -4,20 +4,44 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:yourapp/ui/theme/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yourapp/ui/components/alertDialogWidget.dart';
+import 'package:yourapp/ui/components/alert_dialog_widget.dart';
+import 'package:yourapp/ui/pages/user_apis.dart';
+import 'package:yourapp/utils/ai_operations.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+  const SettingsPage({super.key});
 
   @override
-  _SettingsPageState createState() => _SettingsPageState();
+  State<SettingsPage> createState() => SettingsPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
+class SettingsPageState extends State<SettingsPage> {
   final FlutterSecureStorage storage = FlutterSecureStorage();
   bool _isClearingRecords = false;
   bool _isResetting = false;
+  String _currentModel = AIOperations.defaultModel;
+  final List<String> _availableModels = [
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash',
+    'gemini-1.5-pro',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentModel();
+  }
+
+  Future<void> _loadCurrentModel() async {
+    final model = await AIOperations.getCurrentModel();
+    if (mounted) {
+      setState(() {
+        _currentModel = model;
+      });
+    }
+  }
 
   Future<void> clearAllRecords() async {
     setState(() {
@@ -37,13 +61,15 @@ class _SettingsPageState extends State<SettingsPage> {
       });
     }
 
+    if (!mounted) return;
     setState(() {
       _isClearingRecords = false;
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text("Records cleared", style: AppTextStyles.caption.copyWith(color: Colors.white)),
+        content: Text("Records cleared",
+            style: AppTextStyles.caption.copyWith(color: Colors.white)),
         backgroundColor: AppColors.accentBlue,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
@@ -88,6 +114,10 @@ class _SettingsPageState extends State<SettingsPage> {
             _buildSectionTitle('API'),
             const SizedBox(height: 6),
             _buildApiCard(),
+            const SizedBox(height: 6),
+            _buildModelCard(),
+            const SizedBox(height: 6),
+            _buildUserApisCard(),
             const SizedBox(height: 16),
             _buildSectionTitle('Data'),
             const SizedBox(height: 6),
@@ -166,6 +196,203 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Widget _buildModelCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: AppColors.border, width: 1),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _showModelSelectionDialog(context),
+          borderRadius: BorderRadius.circular(4),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceVariant,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Icon(
+                    Icons.model_training_rounded,
+                    color: AppColors.accentBlue,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'AI Model',
+                        style: AppTextStyles.body.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        _currentModel,
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right,
+                  color: AppColors.textMuted,
+                  size: 16,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showModelSelectionDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Select AI Model',
+                style: AppTextStyles.h3,
+              ),
+              const SizedBox(height: 16),
+              ...List.generate(_availableModels.length, (index) {
+                final model = _availableModels[index];
+                final isSelected = model == _currentModel;
+                return InkWell(
+                  onTap: () async {
+                    await AIOperations().updateModel(model);
+                    setState(() {
+                      _currentModel = model;
+                    });
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.accentBlue.withValues(alpha: 0.1)
+                          : null,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          isSelected
+                              ? Icons.radio_button_checked
+                              : Icons.radio_button_off,
+                          color: isSelected
+                              ? AppColors.accentBlue
+                              : AppColors.textMuted,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          model,
+                          style: AppTextStyles.body.copyWith(
+                            color: isSelected
+                                ? AppColors.accentBlue
+                                : AppColors.textPrimary,
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUserApisCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: AppColors.border, width: 1),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const UserApisPage(),
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(4),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceVariant,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Icon(
+                    Icons.api_rounded,
+                    color: AppColors.accentBlue,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'User APIs',
+                    style: AppTextStyles.body.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right,
+                  color: AppColors.textMuted,
+                  size: 16,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildDataManagementCard() {
     return Container(
       decoration: BoxDecoration(
@@ -185,7 +412,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     showConfirmationDialog(
                       context: context,
                       title: "Clear Records",
-                      content: "Remove all saved records? This cannot be undone.",
+                      content:
+                          "Remove all saved records? This cannot be undone.",
                       onConfirm: clearAllRecords,
                     );
                   },
@@ -259,7 +487,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   title,
                   style: AppTextStyles.body.copyWith(
                     fontWeight: FontWeight.w500,
-                    color: isDestructive ? AppColors.error : AppColors.textPrimary,
+                    color:
+                        isDestructive ? AppColors.error : AppColors.textPrimary,
                   ),
                 ),
               ),
@@ -302,8 +531,12 @@ class _SettingsPageState extends State<SettingsPage> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('yourapp', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
-              Text('v1.0.0', style: AppTextStyles.monoSmall.copyWith(color: AppColors.textMuted)),
+              Text('yourapp',
+                  style:
+                      AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
+              Text('v1.0.0',
+                  style: AppTextStyles.monoSmall
+                      .copyWith(color: AppColors.textMuted)),
             ],
           ),
           const Spacer(),

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_ai/firebase_ai.dart';
 import 'package:yourapp/ui/theme/app_theme.dart';
 import 'package:yourapp/ui/pages/browser.dart';
 import 'package:yourapp/utils/ai_operations.dart';
-import 'package:yourapp/ui/components/savedWidget.dart';
+import 'package:yourapp/ui/components/saved_widget.dart';
+import 'package:yourapp/ui/components/api_tester_widget.dart';
 
 class HomeComponent extends StatefulWidget {
   const HomeComponent({super.key});
@@ -28,6 +30,9 @@ class _HomeComponentState extends State<HomeComponent>
   late ScrollController _specScrollController;
   late TextEditingController _specEditController;
   bool _isEditingSpec = false;
+  bool _showApiTester = false;
+  String? _aiFeedback;
+  bool _isGettingFeedback = false;
 
   @override
   void initState() {
@@ -93,14 +98,14 @@ class _HomeComponentState extends State<HomeComponent>
 
     HapticFeedback.mediumImpact();
 
-    final specToUse =
-        _isEditingSpec ? _specEditController.text : _specContent!;
+    final specToUse = _isEditingSpec ? _specEditController.text : _specContent!;
 
     setState(() {
       _phase = 'building';
       _specContent = specToUse;
       _isEditingSpec = false;
       isLoading = true;
+      _aiFeedback = null;
     });
 
     final htmlCode = await gemini.getCode(specToUse);
@@ -115,6 +120,19 @@ class _HomeComponentState extends State<HomeComponent>
       });
       return;
     }
+
+    setState(() {
+      _isGettingFeedback = true;
+    });
+
+    final feedback = await _getCodeFeedback(specToUse);
+
+    if (!mounted) return;
+
+    setState(() {
+      _aiFeedback = feedback;
+      _isGettingFeedback = false;
+    });
 
     HapticFeedback.heavyImpact();
 
@@ -136,8 +154,26 @@ class _HomeComponentState extends State<HomeComponent>
       _specContent = null;
       _userPrompt = null;
       _errorMessage = null;
+      _aiFeedback = null;
       isLoading = false;
     });
+  }
+
+  Future<String> _getCodeFeedback(String spec) async {
+    try {
+      final feedbackPrompt = '''
+You are generating a mobile app. Briefly explain what this app will do in 1-2 sentences based on the spec:
+
+$spec
+
+Response format: "This app [what it does]"
+''';
+      final content = [Content.text(feedbackPrompt)];
+      final response = await gemini.model.generateContent(content);
+      return response.text?.trim() ?? 'Building your app...';
+    } catch (e) {
+      return 'Building your app...';
+    }
   }
 
   void _handleRejectSpec() {
@@ -203,9 +239,8 @@ class _HomeComponentState extends State<HomeComponent>
           children: [
             Expanded(
               child: Center(
-                child: _errorMessage != null
-                    ? _buildErrorUI()
-                    : _buildWelcomeUI(),
+                child:
+                    _errorMessage != null ? _buildErrorUI() : _buildWelcomeUI(),
               ),
             ),
             _buildInputSection(),
@@ -275,7 +310,8 @@ class _HomeComponentState extends State<HomeComponent>
                 onTap: _handleRejectSpec,
                 child: const Padding(
                   padding: EdgeInsets.all(4),
-                  child: Icon(Icons.close, color: AppColors.textMuted, size: 16),
+                  child:
+                      Icon(Icons.close, color: AppColors.textMuted, size: 16),
                 ),
               ),
               const SizedBox(width: 8),
@@ -303,19 +339,63 @@ class _HomeComponentState extends State<HomeComponent>
                   });
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: _isEditingSpec
-                        ? AppColors.accentBlue.withOpacity(0.15)
+                        ? AppColors.accentBlue.withValues(alpha: 0.15)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(3),
                   ),
                   child: Text(
                     _isEditingSpec ? 'preview' : 'edit',
                     style: AppTextStyles.monoSmall.copyWith(
-                      color: _isEditingSpec ? AppColors.accentBlue : AppColors.textMuted,
+                      color: _isEditingSpec
+                          ? AppColors.accentBlue
+                          : AppColors.textMuted,
                       fontSize: 10,
                     ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  setState(() {
+                    _showApiTester = !_showApiTester;
+                  });
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _showApiTester
+                        ? AppColors.accentBlue.withValues(alpha: 0.15)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.api_rounded,
+                        size: 10,
+                        color: _showApiTester
+                            ? AppColors.accentBlue
+                            : AppColors.textMuted,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'test api',
+                        style: AppTextStyles.monoSmall.copyWith(
+                          color: _showApiTester
+                              ? AppColors.accentBlue
+                              : AppColors.textMuted,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -331,17 +411,20 @@ class _HomeComponentState extends State<HomeComponent>
             color: AppColors.errorLight,
             child: Row(
               children: [
-                const Icon(Icons.warning_amber_rounded, size: 14, color: AppColors.error),
+                const Icon(Icons.warning_amber_rounded,
+                    size: 14, color: AppColors.error),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     _errorMessage!,
-                    style: AppTextStyles.caption.copyWith(color: AppColors.error),
+                    style:
+                        AppTextStyles.caption.copyWith(color: AppColors.error),
                   ),
                 ),
                 GestureDetector(
                   onTap: () => setState(() => _errorMessage = null),
-                  child: const Icon(Icons.close, size: 14, color: AppColors.error),
+                  child:
+                      const Icon(Icons.close, size: 14, color: AppColors.error),
                 ),
               ],
             ),
@@ -351,6 +434,13 @@ class _HomeComponentState extends State<HomeComponent>
         Expanded(
           child: _isEditingSpec ? _buildSpecEditor() : _buildSpecReadView(),
         ),
+
+        // API Tester
+        if (_showApiTester)
+          SizedBox(
+            height: 320,
+            child: ApiTesterWidget(specContent: _specContent),
+          ),
 
         // Action buttons
         _buildSpecActionButtons(),
@@ -425,7 +515,9 @@ class _HomeComponentState extends State<HomeComponent>
                   children: [
                     const Icon(Icons.play_arrow_rounded, size: 16),
                     const SizedBox(width: 6),
-                    Text('Build', style: AppTextStyles.button.copyWith(color: Colors.white)),
+                    Text('Build',
+                        style:
+                            AppTextStyles.button.copyWith(color: Colors.white)),
                   ],
                 ),
               ),
@@ -492,7 +584,7 @@ class _HomeComponentState extends State<HomeComponent>
           ),
           const SizedBox(height: 16),
           Text(
-            'building...',
+            _isGettingFeedback ? 'analyzing...' : 'building...',
             style: AppTextStyles.monoSmall.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -509,6 +601,28 @@ class _HomeComponentState extends State<HomeComponent>
               ),
             ],
           ),
+          if (_aiFeedback != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Text(
+                _aiFeedback!,
+                style: AppTextStyles.monoSmall.copyWith(
+                  color: AppColors.textSecondary,
+                  fontSize: 11,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           SizedBox(
             width: 120,
@@ -538,7 +652,8 @@ class _HomeComponentState extends State<HomeComponent>
               color: AppColors.errorLight,
               borderRadius: BorderRadius.circular(4),
             ),
-            child: const Icon(Icons.error_outline, size: 24, color: AppColors.error),
+            child: const Icon(Icons.error_outline,
+                size: 24, color: AppColors.error),
           ),
           const SizedBox(height: 16),
           Text('Error', style: AppTextStyles.h3),
