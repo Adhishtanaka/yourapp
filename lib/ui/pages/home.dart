@@ -30,13 +30,65 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!mounted) return;
     await _checkApi();
     if (!mounted) return;
+    await _requestAllPermissions();
+  }
+
+  Future<void> _requestAllPermissions() async {
     await _requestLocationPermission();
+    await _requestStoragePermission();
+    await _requestNotificationPermission();
+    await _requestAudioPermission();
+    await _requestVideoPermission();
   }
 
   Future<void> _requestLocationPermission() async {
     var status = await Permission.location.status;
     if (status.isDenied) {
       status = await Permission.location.request();
+      if (status.isPermanentlyDenied && mounted) {
+        openAppSettings();
+      }
+    }
+  }
+
+  Future<void> _requestStoragePermission() async {
+    var status = await Permission.storage.status;
+    if (status.isDenied) {
+      status = await Permission.storage.request();
+      if (status.isPermanentlyDenied && mounted) {
+        openAppSettings();
+      }
+    }
+
+    if (await Permission.manageExternalStorage.status.isDenied) {
+      await Permission.manageExternalStorage.request();
+    }
+  }
+
+  Future<void> _requestNotificationPermission() async {
+    var status = await Permission.notification.status;
+    if (status.isDenied) {
+      status = await Permission.notification.request();
+      if (status.isPermanentlyDenied && mounted) {
+        openAppSettings();
+      }
+    }
+  }
+
+  Future<void> _requestAudioPermission() async {
+    var status = await Permission.microphone.status;
+    if (status.isDenied) {
+      status = await Permission.microphone.request();
+      if (status.isPermanentlyDenied && mounted) {
+        openAppSettings();
+      }
+    }
+  }
+
+  Future<void> _requestVideoPermission() async {
+    var status = await Permission.camera.status;
+    if (status.isDenied) {
+      status = await Permission.camera.request();
       if (status.isPermanentlyDenied && mounted) {
         openAppSettings();
       }

@@ -5,6 +5,7 @@ import 'package:yourapp/ui/pages/browser.dart';
 import 'package:yourapp/utils/ai_operations.dart';
 import 'package:yourapp/utils/file_operations.dart';
 import 'package:yourapp/ui/components/alert_dialog_widget.dart';
+import 'package:yourapp/ui/components/nightrider_loading.dart';
 
 class SavedWidget extends StatefulWidget {
   final String prompt;
@@ -123,13 +124,10 @@ class SavedWidgetState extends State<SavedWidget> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const SizedBox(
-                                  width: 14,
-                                  height: 14,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 1.5,
-                                    color: AppColors.accentBlue,
-                                  ),
+                                NightRiderLoading(
+                                  size: 14,
+                                  color: AppColors.accentBlue,
+                                  strokeWidth: 1.5,
                                 ),
                                 const SizedBox(width: 6),
                                 Text(

@@ -1,5 +1,6 @@
 import 'package:firebase_ai/firebase_ai.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:yourapp/utils/api_tester_helper.dart';
 
 class AIOperations {
   late final GenerativeModel model;
@@ -114,10 +115,19 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
 
   Future<String?> getPrompt(String prompt) async {
     final fullPrompt = '''
-    I am the world's leading expert in mobile app design and system architecture, specializing in creating comprehensive mobile application blueprints. With extensive experience in mobile UI/UX design, accessibility standards, and Material Design principles, I provide complete, production-ready specifications for mobile-first applications.
+    I am the world's leading expert in mobile app design and system architecture, specializing in creating comprehensive mobile application blueprints. With extensive experience in mobile UI/UX design, accessibility standards, and daisyUI/Tailwind principles, I provide complete, production-ready specifications for mobile-first applications.
 
     TASK:
     Generate a detailed mobile application specification based on the user's requirements.
+
+    WEBAPP UI THEME REQUIREMENTS:
+    - Use daisyUI from CDN with black/white/shadcn-inspired design
+    - Primary theme: dark mode with dark gray (#1F2937) background, white text, and gray borders
+    - Accessible accent colors: Green (#22C55E) for success/safe, Yellow (#EAB308) for warning, Red (#EF4444) for error/danger
+    - Minimal, mobile-responsive design optimized for phone screens
+    - Clean, modern aesthetic with subtle shadows and rounded corners
+    - All interactive elements must have sufficient color contrast (WCAG AA minimum)
+    - Use daisyUI components (btn, card, input, swap, etc.) for consistent UI
 
     VALIDATION RULES:
     - Must be a valid application development request
@@ -149,12 +159,16 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     - Card-based content with touch-friendly tap targets (minimum 44px)
     - Scrollable content areas with proper spacing
     
-    Color Scheme:
-    - Primary: Indigo (#4F46E5)
-    - Secondary: Light Gray (#F3F4F6)
-    - Background: White (#FFFFFF)
-    - Text: Dark Gray (#111827)
-    - Accent: Purple for buttons and interactions
+    Color Scheme (daisyUI dark theme):
+    - Background: #1F2937 (dark gray)
+    - Surface: #374151 (lighter gray)
+    - Primary Text: #F9FAFB (white)
+    - Secondary Text: #9CA3AF (gray)
+    - Border: #4B5563 (medium gray)
+    - Accent/Primary: #06B6D4 (cyan - daisyUI primary)
+    - Success: #22C55E (green)
+    - Warning: #EAB308 (yellow)
+    - Error: #EF4444 (red)
     
     Components:
     - Bottom Navigation Bar with icons and labels for main sections
@@ -185,7 +199,7 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     3. Task Management:
        - Tap checkbox to complete task
        - Tap edit button for full-screen edit view
-       - Swipe or tap chips to filter categories
+       - Tap chips to filter categories
        - Pull to refresh for updates
 
     User's application idea: $prompt
@@ -196,12 +210,14 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     3. For valid inputs, follow exact format above
     4. Design for MOBILE-FIRST: NO app bar/top bar, use bottom navigation only, NO sidebars
     5. All features must be FULLY FUNCTIONAL with real data (NO mock data)
-    6. Ensure all UI elements follow Material Design mobile guidelines
+    6. Ensure all UI elements follow daisyUI mobile guidelines
     7. All interactive elements must have touch-friendly sizes (44px minimum)
     8. Include proper mobile gestures and interactions
     9. No explanations or comments in output
-    10. You can decide colors and layout, but prioritize mobile usability
+    10. Use daisyUI dark theme colors specified above
     11. Keep navigation simple - bottom nav with 3-5 items maximum
+    12. Only add features you are CONFIDENT can be implemented - do NOT add features that are uncertain or impossible (e.g., background running, call tracking, real-time GPS tracking of other users, etc.)
+    13. Do NOT include hardcoded items or mock data - all data must come from user input or real APIs
     ''';
 
     final content = [Content.text(fullPrompt)];
@@ -214,7 +230,7 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
 
   Future<String?> getCode(String prompt) async {
     final fullPrompt = '''
-    I am an expert mobile-first web application architect specializing in creating production-ready, touch-optimized, and performant mobile web applications. With mastery of React, Tailwind CSS, and Material Design mobile principles, I deliver complete, fully-functional solutions optimized for mobile devices with NO mock data and ALL features working correctly.
+    I am an expert mobile-first web application architect specializing in creating production-ready, touch-optimized, and performant mobile web applications. With mastery of React, daisyUI, Tailwind CSS, and mobile-first design principles, I deliver complete, fully-functional solutions optimized for mobile devices with NO mock data and ALL features working correctly.
 
     CRITICAL REQUIREMENTS:
     - MOBILE-FIRST DESIGN: Optimize for phone screens, touch interactions
@@ -223,6 +239,25 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     - NO MOCK DATA: All features must work with real LocalStorage/IndexedDB
     - FULLY FUNCTIONAL: Every feature must work correctly, no placeholders
     - TOUCH-OPTIMIZED: All buttons/inputs minimum 44px, proper spacing
+    
+    WEBAPP UI THEME - USE daisyUI FROM CDN:
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+    IMPORTANT: Use daisyUI dark theme (cyberpunk or night) or custom dark theme:
+    <html data-theme="night">
+    
+    Color scheme for accessibility (green/yellow/red for status):
+    - Success/Safe: #22C55E (green)
+    - Warning: #EAB308 (yellow)  
+    - Error/Danger: #EF4444 (red)
+    - Background: #1F2937 (dark gray)
+    - Surface: #374151 (lighter gray)
+    - Primary Text: #F9FAFB (white)
+    - Border: #4B5563 (medium gray)
+    
+    Use daisyUI components: btn, card, input, swap, toggle, navbar, bottom-nav, etc.
     
     EXAMPLE INPUT :
     ===CORE FEATURES===
@@ -238,12 +273,9 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     - Floating Action Button for task creation
     - Card-based task list with large touch targets
     
-    Color Scheme:
-    - Primary: Indigo (#4F46E5)
-    - Secondary: Light Gray (#F3F4F6)
-    - Background: White (#FFFFFF)
-    - Text: Dark Gray (#111827)
-    - Accent: Purple for buttons and interactions
+    Color Scheme (daisyUI night theme):
+    - Use data-theme="night" for dark mode
+    - Success: #22C55E, Warning: #EAB308, Error: #EF4444
     
     Components:
     - Subject filter pills with active state indicators
@@ -270,470 +302,437 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
 
     EXAMPLE OUTPUT:
    <!DOCTYPE html>
-    <html lang="en">
-      <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Student Task Manager</title>
-        <!-- Tailwind CSS -->
-        <script src="https://cdn.tailwindcss.com"></script>
-        <!-- Google Fonts -->
-        <link
-          href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
-          rel="stylesheet"
-        />
-        <style>
-          body {
-            font-family: 'Roboto', sans-serif;
-          }
-          @keyframes slideDown {
-            from { transform: translateY(-100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-          }
-          .animate-slide-down {
-            animation: slideDown 0.3s ease-out;
-          }
-        </style>
-      </head>
-      <body class="bg-gray-100">
-        <div id="root"></div>
-    
-        <!-- React and ReactDOM via CDN -->
-        <script
-          crossorigin
-          src="https://unpkg.com/react@17/umd/react.development.js"
-        ></script>
-        <script
-          crossorigin
-          src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"
-        ></script>
-        <!-- Babel CDN for JSX support -->
-        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-        <!-- React Code -->
-        <script type="text/babel">
-          const { useState, useEffect, useMemo } = React;
-    
-          function TaskManager() {
-            const [tasks, setTasks] = useState([]);
-            const subjects = ['Math', 'Science', 'English', 'History', 'Programming'];
-            const [selectedSubject, setSelectedSubject] = useState('All');
-            const [showTaskModal, setShowTaskModal] = useState(false);
-            const [editingTask, setEditingTask] = useState(null);
-            const [taskForm, setTaskForm] = useState({
-              id: null,
-              title: '',
-              subject: 'Math',
-              deadline: '',
-              progress: 0,
-              completed: false,
-            });
-    
-            // Load tasks from localStorage on mount
-            useEffect(() => {
-              const savedTasks = localStorage.getItem('tasks');
-              if (savedTasks) {
-                setTasks(JSON.parse(savedTasks));
-              }
-            }, []);
-    
-            // Update localStorage when tasks change
-            useEffect(() => {
-              localStorage.setItem('tasks', JSON.stringify(tasks));
-            }, [tasks]);
-    
-            const filteredTasks = useMemo(() => {
-              return selectedSubject === 'All'
-                ? tasks
-                : tasks.filter((task) => task.subject === selectedSubject);
-            }, [tasks, selectedSubject]);
-    
-            const saveTask = (e) => {
-              e.preventDefault();
-              if (editingTask) {
-                // Update existing task
-                const updatedTasks = tasks.map((t) =>
-                  t.id === editingTask.id ? { ...taskForm } : t
-                );
-                setTasks(updatedTasks);
-              } else {
-                // Add new task
-                setTasks([...tasks, { ...taskForm, id: Date.now() }]);
-              }
-              resetForm();
-              setShowTaskModal(false);
-            };
-    
-            const editTask = (task) => {
-              setEditingTask(task);
-              setTaskForm({ ...task });
-              setShowTaskModal(true);
-            };
-    
-            const resetForm = () => {
-              setEditingTask(null);
-              setTaskForm({
-                id: null,
-                title: '',
-                subject: 'Math',
-                deadline: '',
-                progress: 0,
-                completed: false,
-              });
-            };
-    
-            const toggleTask = (task) => {
-              const updatedTasks = tasks.map((t) => {
-                if (t.id === task.id) {
-                  return {
-                    ...t,
-                    completed: !t.completed,
-                    progress: !t.completed ? 100 : 0,
-                  };
-                }
-                return t;
-              });
-              setTasks(updatedTasks);
-            };
-    
-            const formatDeadline = (deadline) => {
-              const date = new Date(deadline);
-              return date.toLocaleString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              });
-            };
-    
-            const isUrgent = (task) => {
-              const deadline = new Date(task.deadline);
-              const now = new Date();
-              const diff = deadline - now;
-              return diff < 24 * 60 * 60 * 1000; // Less than 24 hours
-            };
-    
-            return (
-              <div className="min-h-screen pb-20">
-                {/* Main Content - No App Bar, just content */}
-                <main className="container mx-auto px-4 py-6">
-                  {/* Task Filters */}
-                  <div className="mb-6">
-                    <div className="flex space-x-2 overflow-x-auto pb-2">
-                      <button
-                        onClick={() => setSelectedSubject('All')}
-                        className={`px-4 py-2 rounded-full shadow hover:shadow-md transition \${
-            selectedSubject === 'All'
-        ? 'bg-indigo-600 text-white'
-            : 'bg-white text-gray-700'
-        }`}
-                      >
-                        All
-                      </button>
-                      {subjects.map((subject) => (
-                        <button
-                          key={subject}
-                          onClick={() => setSelectedSubject(subject)}
-                          className={`px-4 py-2 rounded-full shadow hover:shadow-md transition \${
-        selectedSubject === subject
-        ? 'bg-indigo-600 text-white'
-            : 'bg-white text-gray-700'
-        }`}
-                        >
-                          {subject}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-    
-                  {/* Task List */}
-                  <div className="space-y-4">
-                    {filteredTasks.map((task) => (
-                      <div
-                        key={task.id}
-                        className={`bg-white rounded-lg shadow-md p-4 transition-all \${
-        task.completed ? 'opacity-75' : ''
-        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center">
-                              <input
-                                type="checkbox"
-                                checked={task.completed}
-                                onChange={() => toggleTask(task)}
-                                className="h-4 w-4 text-indigo-600 rounded"
-                              />
-                              <h3
-                                className={`ml-3 text-lg font-medium \${
-        task.completed ? 'line-through' : ''
-        }`}
-                              >
-                                {task.title}
-                              </h3>
-                            </div>
-                            <p className="text-gray-600 mt-1">{task.subject}</p>
-                            <div className="flex items-center mt-2">
-                              <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div
-                                  className="bg-indigo-600 h-2 rounded-full transition-all"
-                                  style={{ width:`\${task.progress}%` }}
-                                ></div>
-                              </div>
-                              <span className="ml-2 text-sm text-gray-600">
-                                {task.progress}%
-                              </span>
-                            </div>
-                          </div>
-                          <div className="ml-4 flex flex-col items-end">
-                            <span
-                              className={
-                                isUrgent(task) ? 'text-red-500' : 'text-gray-500'
-                              }
-                            >
-                              {formatDeadline(task.deadline)}
-                            </span>
-                            <button
-                              onClick={() => editTask(task)}
-                              className="mt-2 text-sm text-indigo-600 hover:text-indigo-800"
-                            >
-                              Edit
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-    
-                  {/* Empty State */}
-                  {filteredTasks.length === 0 && (
-                    <div className="text-center py-12">
-                      <p className="text-gray-500">
-                        No tasks found. Add some tasks to get started!
-                      </p>
-                    </div>
-                  )}
-    
-                  {/* Add Task Button - positioned above bottom nav */}
-                  <button
-                    onClick={() => setShowTaskModal(true)}
-                    className="fixed right-6 bottom-24 w-14 h-14 bg-indigo-600 rounded-full shadow-lg flex items-center justify-center text-white hover:bg-indigo-700 transition"
-                  >
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 4v16m8-8H4"
-                      />
-                    </svg>
-                  </button>
-    
-                  {/* Task Modal - Slides from top */}
-                  {showTaskModal && (
-                    <div
-                      className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center pt-4"
-                      onClick={() => setShowTaskModal(false)}
-                    >
-                      <div
-                        className="bg-white rounded-b-2xl p-6 w-full max-w-md animate-slide-down shadow-2xl"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div className="flex items-center justify-between mb-6">
-                          <h2 className="text-xl font-bold">
-                            {editingTask ? 'Edit Task' : 'Add New Task'}
-                          </h2>
-                          <button
-                            type="button"
-                            onClick={() => setShowTaskModal(false)}
-                            className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 active:bg-gray-200"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                        <form onSubmit={saveTask}>
-                          <div className="space-y-5">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Title
-                              </label>
-                              <input
-                                type="text"
-                                value={taskForm.title}
-                                onChange={(e) =>
-                                  setTaskForm({ ...taskForm, title: e.target.value })
-                                }
-                                className="block w-full h-12 px-4 text-base rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-0 transition-colors"
-                                required
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Subject
-                              </label>
-                              <select
-                                value={taskForm.subject}
-                                onChange={(e) =>
-                                  setTaskForm({
-                                    ...taskForm,
-                                    subject: e.target.value,
-                                  })
-                                }
-                                className="block w-full h-12 px-4 text-base rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-0 transition-colors"
-                              >
-                                {subjects.map((subject) => (
-                                  <option key={subject} value={subject}>
-                                    {subject}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Deadline
-                              </label>
-                              <input
-                                type="datetime-local"
-                                value={taskForm.deadline}
-                                onChange={(e) =>
-                                  setTaskForm({
-                                    ...taskForm,
-                                    deadline: e.target.value,
-                                  })
-                                }
-                                className="block w-full h-12 px-4 text-base rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-0 transition-colors"
-                                required
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Progress (%)
-                              </label>
-                              <input
-                                type="number"
-                                value={taskForm.progress}
-                                onChange={(e) =>
-                                  setTaskForm({
-                                    ...taskForm,
-                                    progress: parseInt(e.target.value) || 0,
-                                  })
-                                }
-                                min="0"
-                                max="100"
-                                className="block w-full h-12 px-4 text-base rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-0 transition-colors"
-                              />
-                            </div>
-                          </div>
-                          <div className="mt-8 flex space-x-3">
-                            <button
-                              type="button"
-                              onClick={() => setShowTaskModal(false)}
-                              className="flex-1 h-12 text-base font-medium text-gray-700 bg-gray-100 rounded-xl active:bg-gray-200 transition-colors"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              type="submit"
-                              className="flex-1 h-12 text-base font-medium bg-indigo-600 text-white rounded-xl active:bg-indigo-700 transition-colors"
-                            >
-                              Save
-                            </button>
-                          </div>
-                        </form>
-                      </div>
-                    </div>
-                  )}
-                </main>
-
-                {/* Bottom Navigation Bar */}
-                <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
-                  <div className="flex justify-around items-center h-16">
-                    <button className="flex flex-col items-center justify-center w-full h-full text-indigo-600">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                      </svg>
-                      <span className="text-xs mt-1">Tasks</span>
-                    </button>
-                    <button className="flex flex-col items-center justify-center w-full h-full text-gray-500">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                      <span className="text-xs mt-1">Progress</span>
-                    </button>
-                    <button className="flex flex-col items-center justify-center w-full h-full text-gray-500">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      <span className="text-xs mt-1">Settings</span>
-                    </button>
-                  </div>
-                </nav>
-              </div>
-            );
-          }
-    
-          ReactDOM.render(<TaskManager />, document.getElementById('root'));
-        </script>
-      </body>
-    </html>
+   <html lang="en" data-theme="night">
+     <head>
+       <meta charset="UTF-8" />
+       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+       <title>Student Task Manager</title>
+       <!-- daisyUI + Tailwind CSS -->
+       <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+       <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+       <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+       <!-- Google Fonts -->
+       <link
+         href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+         rel="stylesheet"
+       />
+       <style>
+         body {
+           font-family: 'Roboto', sans-serif;
+         }
+         @keyframes slideDown {
+           from { transform: translateY(-100%); opacity: 0; }
+           to { transform: translateY(0); opacity: 1; }
+         }
+         .animate-slide-down {
+           animation: slideDown 0.3s ease-out;
+         }
+       </style>
+     </head>
+     <body class="bg-base-200">
+       <div id="root"></div>
+   
+       <!-- React and ReactDOM via CDN -->
+       <script
+         crossorigin
+         src="https://unpkg.com/react@17/umd/react.development.js"
+       ></script>
+       <script
+         crossorigin
+         src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"
+       ></script>
+       <!-- Babel CDN for JSX support -->
+       <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+   
+       <!-- React Code -->
+       <script type="text/babel">
+         const { useState, useEffect, useMemo } = React;
+   
+         function TaskManager() {
+           const [tasks, setTasks] = useState([]);
+           const subjects = ['Math', 'Science', 'English', 'History', 'Programming'];
+           const [selectedSubject, setSelectedSubject] = useState('All');
+           const [showTaskModal, setShowTaskModal] = useState(false);
+           const [editingTask, setEditingTask] = useState(null);
+           const [taskForm, setTaskForm] = useState({
+             id: null,
+             title: '',
+             subject: 'Math',
+             deadline: '',
+             progress: 0,
+             completed: false,
+           });
+   
+           // Load tasks from localStorage on mount
+           useEffect(() => {
+             const savedTasks = localStorage.getItem('tasks');
+             if (savedTasks) {
+               setTasks(JSON.parse(savedTasks));
+             }
+           }, []);
+   
+           // Update localStorage when tasks change
+           useEffect(() => {
+             localStorage.setItem('tasks', JSON.stringify(tasks));
+           }, [tasks]);
+   
+           const filteredTasks = useMemo(() => {
+             return selectedSubject === 'All'
+               ? tasks
+               : tasks.filter((task) => task.subject === selectedSubject);
+           }, [tasks, selectedSubject]);
+   
+           const saveTask = (e) => {
+             e.preventDefault();
+             if (editingTask) {
+               const updatedTasks = tasks.map((t) =>
+                 t.id === editingTask.id ? { ...taskForm } : t
+               );
+               setTasks(updatedTasks);
+             } else {
+               setTasks([...tasks, { ...taskForm, id: Date.now() }]);
+             }
+             resetForm();
+             setShowTaskModal(false);
+           };
+   
+           const editTask = (task) => {
+             setEditingTask(task);
+             setTaskForm({ ...task });
+             setShowTaskModal(true);
+           };
+   
+           const resetForm = () => {
+             setEditingTask(null);
+             setTaskForm({
+               id: null,
+               title: '',
+               subject: 'Math',
+               deadline: '',
+               progress: 0,
+               completed: false,
+             });
+           };
+   
+           const toggleTask = (task) => {
+             const updatedTasks = tasks.map((t) => {
+               if (t.id === task.id) {
+                 return {
+                   ...t,
+                   completed: !t.completed,
+                   progress: !t.completed ? 100 : 0,
+                 };
+               }
+               return t;
+             });
+             setTasks(updatedTasks);
+           };
+   
+           const formatDeadline = (deadline) => {
+             const date = new Date(deadline);
+             return date.toLocaleString('en-US', {
+               month: 'short',
+               day: 'numeric',
+               hour: '2-digit',
+               minute: '2-digit',
+             });
+           };
+   
+           const isUrgent = (task) => {
+             const deadline = new Date(task.deadline);
+             const now = new Date();
+             const diff = deadline - now;
+             return diff < 24 * 60 * 60 * 1000;
+           };
+   
+           return (
+             <div className="min-h-screen pb-20">
+               <main className="container mx-auto px-4 py-6">
+                 <div className="mb-6">
+                   <div className="flex flex-wrap gap-2">
+                     <button
+                       onClick={() => setSelectedSubject('All')}
+                       className={`btn btn-sm \${selectedSubject === 'All' ? 'btn-primary' : 'btn-ghost'}`}
+                     >
+                       All
+                     </button>
+                     {subjects.map((subject) => (
+                       <button
+                         key={subject}
+                         onClick={() => setSelectedSubject(subject)}
+                         className={`btn btn-sm \${selectedSubject === subject ? 'btn-primary' : 'btn-ghost'}`}
+                       >
+                         {subject}
+                       </button>
+                     ))}
+                   </div>
+                 </div>
+   
+                 <div className="space-y-4">
+                   {filteredTasks.map((task) => (
+                     <div
+                       key={task.id}
+                       className={`card bg-base-300 shadow-md \${task.completed ? 'opacity-60' : ''}`}
+                     >
+                       <div className="card-body p-4">
+                         <div className="flex items-center justify-between">
+                           <div className="flex-1">
+                             <div className="flex items-center gap-3">
+                               <input
+                                 type="checkbox"
+                                 checked={task.completed}
+                                 onChange={() => toggleTask(task)}
+                                 className="checkbox checkbox-primary checkbox-sm"
+                               />
+                               <h3
+                                 className={`text-lg font-medium \${task.completed ? 'line-through' : ''}`}
+                               >
+                                 {task.title}
+                               </h3>
+                             </div>
+                             <p className="text-base-content/60 mt-1">{task.subject}</p>
+                             <div className="flex items-center mt-2 gap-2">
+                               <progress
+                                 className="progress progress-primary w-full max-w-xs"
+                                 value={task.progress}
+                                 max="100"
+                               ></progress>
+                               <span className="text-sm text-base-content/60">
+                                 {task.progress}%
+                               </span>
+                             </div>
+                           </div>
+                           <div className="flex flex-col items-end gap-2">
+                             <span
+                               className={
+                                 isUrgent(task) ? 'text-error text-sm' : 'text-base-content/50 text-sm'
+                               }
+                             >
+                               {formatDeadline(task.deadline)}
+                             </span>
+                             <button
+                               onClick={() => editTask(task)}
+                               className="btn btn-ghost btn-xs"
+                             >
+                               Edit
+                             </button>
+                           </div>
+                         </div>
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+   
+                 {filteredTasks.length === 0 && (
+                   <div className="text-center py-12">
+                     <p className="text-base-content/50">
+                       No tasks found. Add some tasks to get started!
+                     </p>
+                   </div>
+                 )}
+   
+                 <button
+                   onClick={() => setShowTaskModal(true)}
+                   className="btn btn-primary btn-circle fixed right-6 bottom-24 shadow-lg"
+                 >
+                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                   </svg>
+                 </button>
+   
+                 {showTaskModal && (
+                   <div
+                     className="fixed inset-0 bg-black/50 flex items-start justify-center pt-4 z-50"
+                     onClick={() => setShowTaskModal(false)}
+                   >
+                     <div
+                       className="bg-base-200 rounded-b-2xl p-6 w-full max-w-md animate-slide-down shadow-2xl"
+                       onClick={(e) => e.stopPropagation()}
+                     >
+                       <div className="flex items-center justify-between mb-6">
+                         <h2 className="text-xl font-bold">
+                           {editingTask ? 'Edit Task' : 'Add New Task'}
+                         </h2>
+                         <button
+                           type="button"
+                           onClick={() => setShowTaskModal(false)}
+                           className="btn btn-ghost btn-circle btn-sm"
+                         >
+                           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                           </svg>
+                         </button>
+                       </div>
+                       <form onSubmit={saveTask}>
+                         <div className="space-y-4">
+                           <div className="form-control">
+                             <label className="label">
+                               <span className="label-text">Title</span>
+                             </label>
+                             <input
+                               type="text"
+                               value={taskForm.title}
+                               onChange={(e) =>
+                                 setTaskForm({ ...taskForm, title: e.target.value })
+                               }
+                               className="input input-bordered"
+                               required
+                             />
+                           </div>
+                           <div className="form-control">
+                             <label className="label">
+                               <span className="label-text">Subject</span>
+                             </label>
+                             <select
+                               value={taskForm.subject}
+                               onChange={(e) =>
+                                 setTaskForm({
+                                   ...taskForm,
+                                   subject: e.target.value,
+                                 })
+                               }
+                               className="select select-bordered"
+                             >
+                               {subjects.map((subject) => (
+                                 <option key={subject} value={subject}>
+                                   {subject}
+                                 </option>
+                               ))}
+                             </select>
+                           </div>
+                           <div className="form-control">
+                             <label className="label">
+                               <span className="label-text">Deadline</span>
+                             </label>
+                             <input
+                               type="datetime-local"
+                               value={taskForm.deadline}
+                               onChange={(e) =>
+                                 setTaskForm({
+                                   ...taskForm,
+                                   deadline: e.target.value,
+                                 })
+                               }
+                               className="input input-bordered"
+                               required
+                             />
+                           </div>
+                           <div className="form-control">
+                             <label className="label">
+                               <span className="label-text">Progress (%)</span>
+                             </label>
+                             <input
+                               type="number"
+                               value={taskForm.progress}
+                               onChange={(e) =>
+                                 setTaskForm({
+                                   ...taskForm,
+                                   progress: parseInt(e.target.value) || 0,
+                                 })
+                               }
+                               min="0"
+                               max="100"
+                               className="input input-bordered"
+                             />
+                           </div>
+                         </div>
+                         <div className="mt-6 flex gap-3">
+                           <button
+                             type="button"
+                             onClick={() => setShowTaskModal(false)}
+                             className="btn btn-ghost flex-1"
+                           >
+                             Cancel
+                           </button>
+                           <button
+                             type="submit"
+                             className="btn btn-primary flex-1"
+                           >
+                             Save
+                           </button>
+                         </div>
+                       </form>
+                     </div>
+                   </div>
+                 )}
+               </main>
+   
+               <nav className="btm-nav btm-nav-md bg-base-200 border-t border-base-content/20">
+                 <button className="text-primary">
+                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                   </svg>
+                   <span className="btm-nav-label">Tasks</span>
+                 </button>
+                 <button className="text-base-content/50">
+                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                   </svg>
+                   <span className="btm-nav-label">Progress</span>
+                 </button>
+                 <button className="text-base-content/50">
+                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                   </svg>
+                   <span className="btm-nav-label">Settings</span>
+                 </button>
+               </nav>
+             </div>
+           );
+         }
+   
+         ReactDOM.render(<TaskManager />, document.getElementById('root'));
+       </script>
+     </body>
+   </html>
 
     User's system design specification: $prompt
 
     RESPONSE RULES:
-    1. Generate complete, production-ready HTML/React.js/Tailwind code
-    2. MOBILE-FIRST: Design for phone screens first, NO app bar/top bar, use bottom navigation only (NEVER sidebars)
-    3. ALL FEATURES FULLY FUNCTIONAL: No mock data, use LocalStorage/IndexedDB for persistence
-    4. Implement all core features from the system design completely
-    5. Follow Material Design mobile principles using Tailwind classes
-    6. NO TODO COMMENTS: Every feature must be fully implemented and working
-    7. Touch-optimized UI: All buttons minimum h-12 (48px), inputs minimum h-12, proper spacing for fingers
-    8. Bottom navigation bar with 3-5 items maximum, icons + labels
-    9. MODALS: Must slide from TOP (not bottom/center), use items-start and pt-4 positioning, include close button (min 40x40px)
-    10. Implement proper error handling for all operations
-    11. Include smooth mobile-friendly animations (add CSS keyframes for slide-down animation)
-    12. Use CDN links for any additional libraries needed
-    13. Use good coding practices and proper state management
-    14. Leverage browser APIs (LocalStorage, IndexedDB, etc.) for data persistence
-    15. NO MOCK DATA: All data must persist and be fully functional
-    16. Responsive font sizes: body text 16px+, labels 14px+, buttons 16px font
-    17. All interactive elements must have active: states for touch feedback
-    18. For RSS feeds: Use rss2json.com API (https://api.rss2json.com/v1/api.json?rss_url=YOUR_RSS_URL) - it's fast and free
-    19. For external API calls: Prefer APIs with CORS support, implement loading states and error handling with retry buttons
-    20. DEVICE STORAGE ACCESS: Your generated apps CAN access device storage! Use the global 'window.FileHandler' object:
-        - window.FileHandler.pickFile(options) - Opens file picker to select ONE file. Options: {type: 'audio'|'video'|'image'|'any', multiple: false}
-        - window.FileHandler.pickFiles(options) - Opens file picker to select MULTIPLE files. Options: {type: 'audio'|'video'|'image'|'any', multiple: true}
-        - window.FileHandler.saveFile(data, filename) - Saves data to a file on device storage
-        - window.FileHandler.getAppDocumentsPath() - Gets the app's documents directory path
+    1. Generate complete, production-ready HTML/React.js/daisyUI code
+    2. MUST use daisyUI from CDN as shown above - include themes.css and daisyui@5 CSS
+    3. MUST use data-theme="night" or other daisyUI dark theme
+    4. MOBILE-FIRST: Design for phone screens first, NO app bar/top bar, use bottom navigation only (NEVER sidebars)
+    5. ALL FEATURES FULLY FUNCTIONAL: No mock data, use LocalStorage/IndexedDB for persistence
+    6. Implement all core features from the system design completely
+    7. Use daisyUI components (btn, card, input, progress, btm-nav, modal, etc.)
+    8. NO TODO COMMENTS: Every feature must be fully implemented and working
+    9. Touch-optimized UI: All buttons minimum h-12 (48px), inputs minimum h-12, proper spacing for fingers
+    10. Bottom navigation bar with btm-nav class, 3-5 items maximum, icons + labels
+    11. MODALS: Must slide from TOP (not bottom/center), use items-start and pt-4 positioning, include close button
+    12. Implement proper error handling for all operations
+    13. Include smooth mobile-friendly animations (add CSS keyframes for slide-down animation)
+    14. Use CDN links for any additional libraries needed
+    15. Use good coding practices and proper state management
+    16. Leverage browser APIs (LocalStorage, IndexedDB, etc.) for data persistence
+    17. NO MOCK DATA: All data must persist and be fully functional
+    18. Responsive font sizes: body text 16px+, labels 14px+, buttons 16px font
+    19. All interactive elements must have active: states for touch feedback
+    20. For RSS feeds: Use rss2json.com API (https://api.rss2json.com/v1/api.json?rss_url=YOUR_RSS_URL)
+    21. For external API calls: Prefer APIs with CORS support, implement loading states and error handling with retry buttons
+    22. COLOR ACCESSIBILITY: Use green (#22C55E) for success/safe, yellow (#EAB308) for warning, red (#EF4444) for error/danger
+    23. DEVICE STORAGE ACCESS: Your generated apps CAN access device storage! Use the global 'window.FileHandler' object:
+        - window.FileHandler.pickFile(options) - Pick files from device. Options: {type: 'audio'|'video'|'image'|'any', multiple: false}
+        - window.FileHandler.pickFiles(options) - Pick multiple files. Options: {type: 'audio'|'video'|'image'|'any', multiple: true}
+        - window.FileHandler.saveFile(data, filename) - Save files to device storage
+        - window.FileHandler.getAppDocumentsPath() - Get app's documents directory path
         - Returns: Promise with {name, path, size, extension} or null if cancelled
-        - Example usage: const file = await window.FileHandler.pickFile({type: 'audio'});
-        - This enables building: music players (access device audio files), voice recorders (save recordings), media galleries, file managers, etc.
+        - Example: const file = await window.FileHandler.pickFile({type: 'audio'});
     
-    21. DEVICE MEDIA LIBRARY ACCESS: Your generated apps can query ALL media files (images, videos, audio, documents) on the device! Use:
-        - window.FileHandler.requestPermission() - Request permission to access device media. MUST call this first!
-          Returns Promise with {granted: boolean}. Handle denied permission gracefully.
-        - window.FileHandler.getAllMedia(options) - Get all media files from device. Options: {type: 'image'|'video'|'audio'|'all', page: 0, pageSize: 100}
-          Returns Promise with array of {id, title, type, width, height, duration, createDateTime, modifiedDateTime, path, size}
-          - type: 'image', 'video', or 'audio'
-          - duration: in seconds (for video/audio)
-          - path: local file path (use with HTML5 audio/video tags or img tags)
-          - Use pagination (page, pageSize) for large libraries
-        - Example usage:
+    24. DEVICE MEDIA LIBRARY ACCESS: Your generated apps can query ALL media files on the device! Use:
+        - window.FileHandler.requestPermission() - Request media permission first! Returns {granted: boolean}
+        - window.FileHandler.getAllMedia(options) - Get media files. Options: {type: 'image'|'video'|'audio'|'all', page: 0, pageSize: 100}
+          Returns array of {id, title, type, width, height, duration, createDateTime, modifiedDateTime, path, size}
+        - Use pagination for large libraries
+        - Example:
           const perm = await window.FileHandler.requestPermission();
           if (perm.granted) {
             const photos = await window.FileHandler.getAllMedia({type: 'image', pageSize: 50});
-            const videos = await window.FileHandler.getAllMedia({type: 'video', pageSize: 50});
-            const audio = await window.FileHandler.getAllMedia({type: 'audio', pageSize: 50});
-            const all = await window.FileHandler.getAllMedia({type: 'all', pageSize: 100});
           }
-        - This enables building: photo galleries, video players, music players, document viewers, file managers, media organizers, etc.
+    
+    25. ONLY add features you are CONFIDENT can be implemented - do NOT add features that are uncertain or impossible
+    26. Do NOT include hardcoded items or mock data - all data must come from user input or real APIs
     ''';
 
     final content = [Content.text(fullPrompt)];
@@ -1137,4 +1136,81 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     final response = await model.generateContent(content);
     return response.text;
   }
+
+  Future<String> validateAndAddApiToSpec({
+    required String url,
+    required String method,
+    String? body,
+    required String currentSpec,
+  }) async {
+    final apiTester = ApiTesterHelper();
+
+    final result = await apiTester.validateApiAgainstSpec(
+      url: url,
+      method: method,
+      body: body,
+      specContent: currentSpec,
+    );
+
+    if (!result.valid) {
+      return 'API_VALIDATION_FAILED: ${result.message}';
+    }
+
+    return currentSpec + result.toSpecAddition();
+  }
+
+  Future<Map<String, dynamic>?> testApiWithRetry({
+    required String url,
+    required String method,
+    String? body,
+  }) async {
+    final apiTester = ApiTesterHelper();
+
+    final result = await apiTester.testApi(
+      url: url,
+      method: method,
+      body: body,
+    );
+
+    if (result.success) {
+      return {
+        'success': true,
+        'statusCode': result.statusCode,
+        'responseData': result.responseData,
+        'responseTime': result.responseTime?.inMilliseconds,
+      };
+    } else {
+      return {
+        'success': false,
+        'error': result.error,
+        'attempts': result.attempts,
+      };
+    }
+  }
+
+  static String get apiTestingPrompt => '''
+API TESTING AND VALIDATION:
+When the user asks to create an app that requires API integration, follow these steps:
+1. First, analyze the spec to identify required API endpoints
+2. If the user provides API URLs, use the ApiTesterHelper to validate them
+3. The helper class will automatically retry up to 3 times if the API fails
+4. If API is valid, extract and add the following to the spec:
+   - API Structure (REST, GraphQL, etc.)
+   - API Type (authentication, paginated, search, standard, list)
+   - Input Schema (required parameters)
+   - Output Schema (response format)
+   - URLs used
+5. If API fails after 3 retries, inform the user that the AI API validation failed
+6. The API tester can be used as a function call for programmatic validation
+
+Example usage:
+final result = await apiTester.validateApiAgainstSpec(
+  url: 'https://api.example.com/users',
+  method: 'GET',
+  specContent: currentSpec,
+);
+
+If result.valid is true, use result.toSpecAddition() to add the API details to the spec.
+If result.valid is false, inform the user about the failure.
+''';
 }

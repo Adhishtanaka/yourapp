@@ -5,7 +5,6 @@ import 'package:yourapp/ui/theme/app_theme.dart';
 import 'package:yourapp/ui/pages/browser.dart';
 import 'package:yourapp/utils/ai_operations.dart';
 import 'package:yourapp/ui/components/saved_widget.dart';
-import 'package:yourapp/ui/components/api_tester_widget.dart';
 
 class HomeComponent extends StatefulWidget {
   const HomeComponent({super.key});
@@ -30,7 +29,6 @@ class _HomeComponentState extends State<HomeComponent>
   late ScrollController _specScrollController;
   late TextEditingController _specEditController;
   bool _isEditingSpec = false;
-  bool _showApiTester = false;
   String? _aiFeedback;
   bool _isGettingFeedback = false;
 
@@ -363,39 +361,29 @@ Response format: "This app [what it does]"
                 onTap: () {
                   HapticFeedback.lightImpact();
                   setState(() {
-                    _showApiTester = !_showApiTester;
+                    if (_isEditingSpec) {
+                      _specContent = _specEditController.text;
+                    }
+                    _isEditingSpec = !_isEditingSpec;
                   });
                 },
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: _showApiTester
+                    color: _isEditingSpec
                         ? AppColors.accentBlue.withValues(alpha: 0.15)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(3),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.api_rounded,
-                        size: 10,
-                        color: _showApiTester
-                            ? AppColors.accentBlue
-                            : AppColors.textMuted,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'test api',
-                        style: AppTextStyles.monoSmall.copyWith(
-                          color: _showApiTester
-                              ? AppColors.accentBlue
-                              : AppColors.textMuted,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    _isEditingSpec ? 'preview' : 'edit',
+                    style: AppTextStyles.monoSmall.copyWith(
+                      color: _isEditingSpec
+                          ? AppColors.accentBlue
+                          : AppColors.textMuted,
+                      fontSize: 10,
+                    ),
                   ),
                 ),
               ),
@@ -434,13 +422,6 @@ Response format: "This app [what it does]"
         Expanded(
           child: _isEditingSpec ? _buildSpecEditor() : _buildSpecReadView(),
         ),
-
-        // API Tester
-        if (_showApiTester)
-          SizedBox(
-            height: 320,
-            child: ApiTesterWidget(specContent: _specContent),
-          ),
 
         // Action buttons
         _buildSpecActionButtons(),
