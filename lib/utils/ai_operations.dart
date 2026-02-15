@@ -29,13 +29,82 @@ class AIOperations {
 
   Future<String?> fixError(String error, String code) async {
     final fixPrompt = '''
-Fix this JavaScript/React code error. The error is:
+I am an expert JavaScript/React debugging specialist with deep knowledge of React, Tailwind CSS, and browser APIs. I analyze runtime errors, identify root causes, and provide complete working solutions while maintaining the original application architecture and functionality.
+
+TASK:
+Fix the JavaScript/React runtime error in the provided code. Identify the exact cause of the error and provide a complete working solution.
+
+ERROR DETAILS:
 $error
 
-Current code:
+CURRENT CODE:
 $code
 
-Respond with the COMPLETE fixed code (the entire HTML file with fixes applied).
+EXAMPLE ERROR AND FIX:
+Error: "Cannot read property 'map' of undefined"
+Code:
+const tasks = this.props.items;
+return tasks.map(t => <div>{t.name}</div>);
+
+Fixed Code:
+const tasks = this.props.items || [];
+return (tasks || []).map(t => <div>{t.name}</div>);
+
+Error: "Maximum update depth exceeded"
+Code:
+function App() {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    setCount(count + 1);
+  }, [count]);
+}
+
+Fixed Code:
+function App() {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    setCount(prev => prev + 1);
+  }, []);
+}
+
+Error: "localStorage is not defined"
+Code:
+useEffect(() => {
+  const data = localStorage.getItem('key');
+}, []);
+
+Fixed Code:
+useEffect(() => {
+  if (typeof window !== 'undefined') {
+    const data = localStorage.getItem('key');
+  }
+}, []);
+
+IMPORTANT CONTEXT - Available APIs:
+The generated apps run in a WebView with access to these browser/device APIs:
+- window.FileHandler.pickFile(options) - Pick files from device
+- window.FileHandler.pickFiles(options) - Pick multiple files
+- window.FileHandler.saveFile(data, filename) - Save files
+- window.FileHandler.getAppDocumentsPath() - Get app directory
+- window.FileHandler.requestPermission() - Request media permission
+- window.FileHandler.getAllMedia(options) - Query device media library
+
+RESPONSE RULES:
+1. Provide the COMPLETE fixed HTML file (the entire code with fixes applied)
+2. Fix the ROOT CAUSE, not just the symptoms
+3. Ensure the fix doesn't break existing functionality
+4. Handle edge cases (null, undefined, empty arrays, etc.)
+5. Use optional chaining (?.) and nullish coalescing (??) where appropriate
+6. Add proper error boundaries and defensive coding
+7. For async operations, ensure proper error handling with try-catch
+8. Preserve all existing features and data persistence
+9. Do NOT change the overall structure or architecture
+10. Do NOT add any explanations - only return the fixed code
+11. If the error is in React state management, use proper state immutability patterns
+12. For dependency array issues in useEffect, use appropriate dependencies or empty array
+13. Ensure all event handlers are properly bound
+
+IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatting or explanations.
 ''';
 
     final content = [Content.text(fixPrompt)];
@@ -638,6 +707,33 @@ Respond with the COMPLETE fixed code (the entire HTML file with fixes applied).
     17. All interactive elements must have active: states for touch feedback
     18. For RSS feeds: Use rss2json.com API (https://api.rss2json.com/v1/api.json?rss_url=YOUR_RSS_URL) - it's fast and free
     19. For external API calls: Prefer APIs with CORS support, implement loading states and error handling with retry buttons
+    20. DEVICE STORAGE ACCESS: Your generated apps CAN access device storage! Use the global 'window.FileHandler' object:
+        - window.FileHandler.pickFile(options) - Opens file picker to select ONE file. Options: {type: 'audio'|'video'|'image'|'any', multiple: false}
+        - window.FileHandler.pickFiles(options) - Opens file picker to select MULTIPLE files. Options: {type: 'audio'|'video'|'image'|'any', multiple: true}
+        - window.FileHandler.saveFile(data, filename) - Saves data to a file on device storage
+        - window.FileHandler.getAppDocumentsPath() - Gets the app's documents directory path
+        - Returns: Promise with {name, path, size, extension} or null if cancelled
+        - Example usage: const file = await window.FileHandler.pickFile({type: 'audio'});
+        - This enables building: music players (access device audio files), voice recorders (save recordings), media galleries, file managers, etc.
+    
+    21. DEVICE MEDIA LIBRARY ACCESS: Your generated apps can query ALL media files (images, videos, audio, documents) on the device! Use:
+        - window.FileHandler.requestPermission() - Request permission to access device media. MUST call this first!
+          Returns Promise with {granted: boolean}. Handle denied permission gracefully.
+        - window.FileHandler.getAllMedia(options) - Get all media files from device. Options: {type: 'image'|'video'|'audio'|'all', page: 0, pageSize: 100}
+          Returns Promise with array of {id, title, type, width, height, duration, createDateTime, modifiedDateTime, path, size}
+          - type: 'image', 'video', or 'audio'
+          - duration: in seconds (for video/audio)
+          - path: local file path (use with HTML5 audio/video tags or img tags)
+          - Use pagination (page, pageSize) for large libraries
+        - Example usage:
+          const perm = await window.FileHandler.requestPermission();
+          if (perm.granted) {
+            const photos = await window.FileHandler.getAllMedia({type: 'image', pageSize: 50});
+            const videos = await window.FileHandler.getAllMedia({type: 'video', pageSize: 50});
+            const audio = await window.FileHandler.getAllMedia({type: 'audio', pageSize: 50});
+            const all = await window.FileHandler.getAllMedia({type: 'all', pageSize: 100});
+          }
+        - This enables building: photo galleries, video players, music players, document viewers, file managers, media organizers, etc.
     ''';
 
     final content = [Content.text(fullPrompt)];

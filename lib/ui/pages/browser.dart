@@ -4,6 +4,9 @@ import 'package:yourapp/ui/theme/app_theme.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yourapp/utils/ai_operations.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 class BrowserUI extends StatefulWidget {
   final String html;
@@ -450,6 +453,7 @@ class BrowserUIState extends State<BrowserUI> {
                     onWebViewCreated: (controller) {
                       webViewController = controller;
                       _injectConsoleScript();
+                      _injectFileHandlers();
                     },
                     onConsoleMessage: (controller, consoleMessage) {
                       _handleConsoleMessage(controller, consoleMessage);
@@ -490,6 +494,8 @@ class BrowserUIState extends State<BrowserUI> {
                       });
                       pullToRefreshController.endRefreshing();
                       _injectConsoleScript();
+                      _injectFileHandlers();
+                      _registerJavaScriptHandlers();
                     },
                   ),
                 ),
@@ -553,6 +559,295 @@ class BrowserUIState extends State<BrowserUI> {
     ''';
 
     await webViewController.evaluateJavascript(source: script);
+  }
+
+  void _injectFileHandlers() async {
+    final pickFileScript = '''
+      (function() {
+        window.FileHandler = {
+          pickFile: async function(options) {
+            return new Promise(function(resolve, reject) {
+              window.flutter_inappwebview.callHandler('pickFile', JSON.stringify(options || {}))
+                .then(function(result) {
+                  resolve(result);
+                })
+                .catch(function(err) {
+                  reject(err);
+                });
+            });
+          },
+          pickFiles: async function(options) {
+            return new Promise(function(resolve, reject) {
+              window.flutter_inappwebview.callHandler('pickFiles', JSON.stringify(options || {}))
+                .then(function(result) {
+                  resolve(result);
+                })
+                .catch(function(err) {
+                  reject(err);
+                });
+            });
+          },
+          saveFile: async function(data, filename) {
+            return new Promise(function(resolve, reject) {
+              window.flutter_inappwebview.callHandler('saveFile', JSON.stringify({data: data, filename: filename}))
+                .then(function(result) {
+                  resolve(result);
+                })
+                .catch(function(err) {
+                  reject(err);
+                });
+            });
+          },
+          getAppDocumentsPath: async function() {
+            return new Promise(function(resolve, reject) {
+              window.flutter_inappwebview.callHandler('getAppDocumentsPath')
+                .then(function(result) {
+                  resolve(result);
+                })
+                .catch(function(err) {
+                  reject(err);
+                });
+            });
+          },
+          getAllMedia: async function(options) {
+            return new Promise(function(resolve, reject) {
+              window.flutter_inappwebview.callHandler('getAllMedia', JSON.stringify(options || {}))
+                .then(function(result) {
+                  resolve(result);
+                })
+                .catch(function(err) {
+                  reject(err);
+                });
+            });
+          },
+          requestPermission: async function() {
+            return new Promise(function(resolve, reject) {
+              window.flutter_inappwebview.callHandler('requestMediaPermission')
+                .then(function(result) {
+                  resolve(result);
+                })
+                .catch(function(err) {
+                  reject(err);
+                });
+            });
+          }
+        };
+      })();
+    ''';
+
+    await webViewController.evaluateJavascript(source: pickFileScript);
+  }
+
+  void _registerJavaScriptHandlers() {
+    webViewController.addJavaScriptHandler(
+      handlerName: 'pickFile',
+      callback: (args) async {
+        try {
+          String type = 'any';
+          if (args.isNotEmpty && args[0] is Map) {
+            final options = args[0] as Map;
+            type = options['type'] as String? ?? 'any';
+          }
+
+          FileType fileType;
+          switch (type) {
+            case 'audio':
+              fileType = FileType.audio;
+              break;
+            case 'video':
+              fileType = FileType.video;
+              break;
+            case 'image':
+              fileType = FileType.image;
+              break;
+            default:
+              fileType = FileType.any;
+          }
+
+          final result = await FilePicker.platform.pickFiles(type: fileType);
+          if (result != null && result.files.isNotEmpty) {
+            final file = result.files.first;
+            return {
+              'name': file.name,
+              'path': file.path,
+              'size': file.size,
+              'extension': file.extension,
+            };
+          }
+          return null;
+        } catch (e) {
+          return {'error': e.toString()};
+        }
+      },
+    );
+
+    webViewController.addJavaScriptHandler(
+      handlerName: 'pickFiles',
+      callback: (args) async {
+        try {
+          final result =
+              await FilePicker.platform.pickFiles(allowMultiple: true);
+          if (result != null && result.files.isNotEmpty) {
+            return result.files
+                .map((file) => {
+                      'name': file.name,
+                      'path': file.path,
+                      'size': file.size,
+                      'extension': file.extension,
+                    })
+                .toList();
+          }
+          return [];
+        } catch (e) {
+          return [
+            {'error': e.toString()}
+          ];
+        }
+      },
+    );
+
+    webViewController.addJavaScriptHandler(
+      handlerName: 'saveFile',
+      callback: (args) async {
+        if (args.isEmpty) return {'error': 'No data provided'};
+        try {
+          final data = args[0];
+          final String? filename = data['filename'] as String?;
+          if (filename == null) return {'error': 'Filename required'};
+
+          final result = await FilePicker.platform.saveFile(
+            fileName: filename,
+          );
+          return {'path': result};
+        } catch (e) {
+          return {'error': e.toString()};
+        }
+      },
+    );
+
+    webViewController.addJavaScriptHandler(
+      handlerName: 'getAppDocumentsPath',
+      callback: (args) async {
+        try {
+          final directory = await getApplicationDocumentsDirectory();
+          return directory.path;
+        } catch (e) {
+          return {'error': e.toString()};
+        }
+      },
+    );
+
+    webViewController.addJavaScriptHandler(
+      handlerName: 'requestMediaPermission',
+      callback: (args) async {
+        try {
+          final permission = await PhotoManager.requestPermissionExtend();
+          return {'granted': permission.isAuth};
+        } catch (e) {
+          return {'error': e.toString()};
+        }
+      },
+    );
+
+    webViewController.addJavaScriptHandler(
+      handlerName: 'getAllMedia',
+      callback: (args) async {
+        try {
+          String type = 'all';
+          int page = 0;
+          int pageSize = 100;
+
+          if (args.isNotEmpty && args[0] is Map) {
+            final options = args[0] as Map;
+            type = options['type'] as String? ?? 'all';
+            page = options['page'] as int? ?? 0;
+            pageSize = options['pageSize'] as int? ?? 100;
+          }
+
+          FilterOptionGroup filterOptionGroup;
+          switch (type) {
+            case 'image':
+              filterOptionGroup = FilterOptionGroup(
+                imageOption: const FilterOption(
+                  sizeConstraint: SizeConstraint(ignoreSize: true),
+                ),
+              );
+              break;
+            case 'video':
+              filterOptionGroup = FilterOptionGroup(
+                videoOption: const FilterOption(
+                  sizeConstraint: SizeConstraint(ignoreSize: true),
+                ),
+              );
+              break;
+            case 'audio':
+              filterOptionGroup = FilterOptionGroup(
+                audioOption: const FilterOption(
+                  sizeConstraint: SizeConstraint(ignoreSize: true),
+                ),
+              );
+              break;
+            default:
+              filterOptionGroup = FilterOptionGroup(
+                imageOption: const FilterOption(
+                  sizeConstraint: SizeConstraint(ignoreSize: true),
+                ),
+                videoOption: const FilterOption(
+                  sizeConstraint: SizeConstraint(ignoreSize: true),
+                ),
+              );
+          }
+
+          final albums = await PhotoManager.getAssetPathList(
+            type: type == 'image'
+                ? RequestType.image
+                : type == 'video'
+                    ? RequestType.video
+                    : type == 'audio'
+                        ? RequestType.audio
+                        : RequestType.common,
+            filterOption: filterOptionGroup,
+          );
+
+          if (albums.isEmpty) {
+            return [];
+          }
+
+          final recentAlbum = albums.first;
+          final assets = await recentAlbum.getAssetListPaged(
+            page: page,
+            size: pageSize,
+          );
+
+          final List<Map<String, dynamic>> result = [];
+          for (final asset in assets) {
+            final file = await asset.file;
+            result.add({
+              'id': asset.id,
+              'title': asset.title,
+              'type': asset.type == AssetType.image
+                  ? 'image'
+                  : asset.type == AssetType.video
+                      ? 'video'
+                      : 'audio',
+              'width': asset.width,
+              'height': asset.height,
+              'duration': asset.duration,
+              'createDateTime': asset.createDateTime.millisecondsSinceEpoch,
+              'modifiedDateTime': asset.modifiedDateTime.millisecondsSinceEpoch,
+              'path': file?.path,
+              'size': file?.lengthSync(),
+            });
+          }
+
+          return result;
+        } catch (e) {
+          return [
+            {'error': e.toString()}
+          ];
+        }
+      },
+    );
   }
 
   Widget _buildConsolePanel() {
