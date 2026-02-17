@@ -590,6 +590,12 @@ class BrowserUIState extends State<BrowserUI> {
           sendToFlutter('consoleError', message + ' (line ' + lineno + ')');
           return false;
         };
+
+        window.addEventListener('unhandledrejection', function(event) {
+          var reason = event.reason;
+          var msg = reason instanceof Error ? reason.message : String(reason);
+          sendToFlutter('consoleError', 'Unhandled Promise Rejection: ' + msg);
+        });
       })();
     ''';
 

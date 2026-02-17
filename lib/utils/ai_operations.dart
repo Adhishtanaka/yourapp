@@ -103,6 +103,7 @@ RESPONSE RULES:
 11. If the error is in React state management, use proper state immutability patterns
 12. For dependency array issues in useEffect, use appropriate dependencies or empty array
 13. Ensure all event handlers are properly bound
+14. If the code uses daisyUI 5, use correct daisyUI 5 classes: "dock" (NOT "btm-nav"), "dock-label" (NOT "btm-nav-label"), "dock-active" for active nav, "fieldset"/"fieldset-legend" (NOT "form-control"/"label-text"), inputs/selects have borders by default (no "input-bordered"/"select-bordered")
 
 IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatting or explanations.
 ''';
@@ -126,7 +127,8 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     - Minimal, mobile-responsive design optimized for phone screens
     - Clean, modern aesthetic with subtle shadows and rounded corners
     - All interactive elements must have sufficient color contrast (WCAG AA minimum)
-    - Use daisyUI components (btn, card, input, swap, etc.) for consistent UI
+    - Use daisyUI 5 components (btn, card, input, swap, dock, fieldset, etc.) for consistent UI
+    - IMPORTANT daisyUI 5 changes: use "dock" instead of "btm-nav", "dock-label" instead of "btm-nav-label", "dock-active" for active state, "fieldset" instead of "form-control", borders are default on inputs/selects (no need for input-bordered/select-bordered)
 
     VALIDATION RULES:
     - Must be a valid application development request
@@ -275,7 +277,13 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     - Primary Text: #F9FAFB (white)
     - Border: #4B5563 (medium gray)
     
-    Use daisyUI components: btn, card, input, swap, toggle, navbar, bottom-nav, etc.
+    Use daisyUI 5 components: btn, card, input, swap, toggle, dock, fieldset, etc.
+    CRITICAL daisyUI 5 CLASS CHANGES (do NOT use old daisyUI 4 classes):
+    - Bottom navigation: use "dock" NOT "btm-nav", "dock-label" NOT "btm-nav-label", "dock-active" for active item
+    - Form fields: use "fieldset" with "legend" NOT "form-control" with "label"/"label-text"
+    - Inputs/selects have borders by default - do NOT add "input-bordered" or "select-bordered" (these classes don't exist)
+    - Card: use "card-border" NOT "card-bordered"
+    - Tabs: use "tabs-border"/"tabs-lift"/"tabs-box" NOT "tabs-bordered"/"tabs-lifted"/"tabs-boxed"
     
     EXAMPLE INPUT :
     ===CORE FEATURES===
@@ -574,24 +582,20 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
                        </div>
                        <form onSubmit={saveTask}>
                          <div className="space-y-4">
-                           <div className="form-control">
-                             <label className="label">
-                               <span className="label-text">Title</span>
-                             </label>
+                           <fieldset className="fieldset">
+                             <legend className="fieldset-legend">Title</legend>
                              <input
                                type="text"
                                value={taskForm.title}
                                onChange={(e) =>
                                  setTaskForm({ ...taskForm, title: e.target.value })
                                }
-                               className="input input-bordered"
+                               className="input w-full"
                                required
                              />
-                           </div>
-                           <div className="form-control">
-                             <label className="label">
-                               <span className="label-text">Subject</span>
-                             </label>
+                           </fieldset>
+                           <fieldset className="fieldset">
+                             <legend className="fieldset-legend">Subject</legend>
                              <select
                                value={taskForm.subject}
                                onChange={(e) =>
@@ -600,7 +604,7 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
                                    subject: e.target.value,
                                  })
                                }
-                               className="select select-bordered"
+                               className="select w-full"
                              >
                                {subjects.map((subject) => (
                                  <option key={subject} value={subject}>
@@ -608,11 +612,9 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
                                  </option>
                                ))}
                              </select>
-                           </div>
-                           <div className="form-control">
-                             <label className="label">
-                               <span className="label-text">Deadline</span>
-                             </label>
+                           </fieldset>
+                           <fieldset className="fieldset">
+                             <legend className="fieldset-legend">Deadline</legend>
                              <input
                                type="datetime-local"
                                value={taskForm.deadline}
@@ -622,14 +624,12 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
                                    deadline: e.target.value,
                                  })
                                }
-                               className="input input-bordered"
+                               className="input w-full"
                                required
                              />
-                           </div>
-                           <div className="form-control">
-                             <label className="label">
-                               <span className="label-text">Progress (%)</span>
-                             </label>
+                           </fieldset>
+                           <fieldset className="fieldset">
+                             <legend className="fieldset-legend">Progress (%)</legend>
                              <input
                                type="number"
                                value={taskForm.progress}
@@ -641,9 +641,9 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
                                }
                                min="0"
                                max="100"
-                               className="input input-bordered"
+                               className="input w-full"
                              />
-                           </div>
+                           </fieldset>
                          </div>
                          <div className="mt-6 flex gap-3">
                            <button
@@ -666,33 +666,33 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
                  )}
                </main>
    
-               <nav className="btm-nav btm-nav-md bg-base-200 border-t border-base-content/20">
-                 <button className="text-primary">
+               <div className="dock dock-md">
+                 <button className="dock-active">
                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                    </svg>
-                   <span className="btm-nav-label">Tasks</span>
+                   <span className="dock-label">Tasks</span>
                  </button>
-                 <button onClick={() => setShowTaskModal(true)} className="text-base-content/50">
+                 <button onClick={() => setShowTaskModal(true)}>
                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                    </svg>
-                   <span className="btm-nav-label">Add</span>
+                   <span className="dock-label">Add</span>
                  </button>
-                 <button className="text-base-content/50">
+                 <button>
                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                    </svg>
-                   <span className="btm-nav-label">Progress</span>
+                   <span className="dock-label">Progress</span>
                  </button>
-                 <button className="text-base-content/50">
+                 <button>
                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                    </svg>
-                   <span className="btm-nav-label">Settings</span>
+                   <span className="dock-label">Settings</span>
                  </button>
-               </nav>
+               </div>
              </div>
            );
          }
@@ -712,10 +712,12 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     5. NO FLOATING ACTION BUTTONS (FAB): NEVER use btn-circle fixed/floating buttons. Primary actions go in bottom nav as an "Add" tab or as inline buttons at the top of content
     6. ALL FEATURES FULLY FUNCTIONAL: No mock data, use LocalStorage/IndexedDB for persistence
     6. Implement all core features from the system design completely
-    7. Use daisyUI components (btn, card, input, progress, btm-nav, modal, etc.)
+    7. Use daisyUI 5 components (btn, card, input, progress, dock, modal, fieldset, etc.)
     8. NO TODO COMMENTS: Every feature must be fully implemented and working
     9. Touch-optimized UI: All buttons minimum h-12 (48px), inputs minimum h-12, proper spacing for fingers
-    10. Bottom navigation bar with btm-nav class, 3-5 items maximum, icons + labels
+    10. Bottom navigation bar with "dock" class (NOT "btm-nav"), use "dock-label" for labels, "dock-active" for active item, 3-5 items maximum, icons + labels
+    CRITICAL: Do NOT use these removed/renamed daisyUI 4 classes: btm-nav, btm-nav-label, input-bordered, select-bordered, textarea-bordered, form-control, label-text, card-bordered, tabs-bordered, tabs-lifted, tabs-boxed
+    Instead use: dock, dock-label, dock-active, input (borders default), select (borders default), fieldset/legend, card-border, tabs-border, tabs-lift, tabs-box
     11. MODALS: Must slide from TOP (not bottom/center), use items-start and pt-4 positioning, include close button
     12. Implement proper error handling for all operations
     13. Include smooth mobile-friendly animations (add CSS keyframes for slide-down animation)
@@ -1144,6 +1146,7 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
   8. Ensure all new UI elements match the existing design language
   9. Optimize for performance and maintainability
   10. Do not explain the changes in your response - just provide the complete updated code
+  11. If the code uses daisyUI 5, use correct daisyUI 5 classes: "dock" (NOT "btm-nav"), "dock-label" (NOT "btm-nav-label"), "dock-active" for active nav item, "fieldset"/"fieldset-legend" (NOT "form-control"/"label-text"), inputs/selects have borders by default (do NOT add "input-bordered"/"select-bordered")
 
   IMPORTANT: The response must be the complete, ready-to-use code with all changes fully implemented.
   ''';
