@@ -1,47 +1,67 @@
 # YourApp
 
 ## Overview
-YourApp is an AI-powered **mobile IDE and application builder** that allows users to generate fully functional apps within the same app. Instead of searching through app stores for solutions that may lack customization, updates, or essential features, users can create their own tailored applications using a simple prompt-based system. **This is not a one-click app-building solution but more like an AI-based mobile IDE, providing a workspace for generating and refining applications.**
+YourApp is an AI-powered **mobile IDE and application builder** that allows users to generate fully functional web apps within the same app. Instead of searching through app stores for solutions that may lack customization, updates, or essential features, users can create their own tailored applications using a simple prompt-based system. 
 
-<img src="rss2.gif" alt="YourApp" width="300">
 
-## Approach
-
-1. **AI-Assisted Code Generation**  
-   - **Two-Step Prompt Process:**  
-     - *Step 1:* The user’s initial prompt is refined to articulate clear app-building instructions.
-     - *Step 2:* The refined prompt is fed to an AI engine (e.g., Gemini API or Claude 3.7) to generate a single-file HTML output.  
-   - **Output Constraints:**  
-     The generated HTML includes inline CSS and JavaScript, ensuring the entire application is bundled in a single file.
-
-2. **Rendering the Application**  
-   - The HTML code is sanitized and then displayed using a Flutter WebView.
-   - Local storage support is integrated, allowing for data persistence across sessions without platform restrictions.
-
-3. **Customization and Maintenance**  
-   - While the concept simplifies app generation, it introduces challenges such as ad management, updating features, and providing extensive customization.
-   - A dedicated section in the app stores previously used prompts and saved HTML code, minimizing token usage and offering a streamlined user experience.
+<img src="screenshot/weather.gif" alt="YourApp" width="300">
 
 ## Features
-- **AI-Powered Mobile IDE & App Generation**: Users provide a prompt, which is optimized and fed into an AI model to generate a complete HTML-based app.
-- **Customization & Editing**: Users can modify prompts and regenerate their apps instantly.
-- **Offline Support**: Save generated apps for future use without consuming additional AI tokens.
-- **Browser API Integration**: Leverage local storage and other browser capabilities for enhanced functionality.
+- **Spec-Driven AI Generation**: Two-step process — AI creates a structured spec first, then generates code from the approved spec
+- **Editable Specs**: Review, edit, and regenerate specs before code generation
+- **AI-Powered Code Generation**: Generates complete single-file HTML apps with Tailwind CSS + daisyUI 5 theming
+- **Runtime Console Monitor**: Built-in console log viewer that captures errors, warnings, and logs from generated apps in real-time
+- **AI Error Fixing**: Detected runtime errors can be automatically fixed by AI with one tap
+- **Customization & Editing**: Modify generated apps with natural language edit instructions
+- **Offline Support**: Save generated apps for future use without consuming additional AI tokens
+- **Device Storage Access**: Generated apps can access file picker and device media
+
+
+## Architecture
+
+```mermaid
+graph TD
+    A[User Prompt] --> B[AI Spec Generation]
+    B --> C{Spec Review}
+    C -->|Edit| B
+    C -->|Approve| D[AI Code Generation]
+    D --> E[HTML/CSS/JS Output]
+    E --> F[InAppWebView Renderer]
+    F --> G[Live App Preview]
+    G --> H[Console Monitor]
+    H -->|Errors Detected| I[AI Error Fixer]
+    I --> F
+    G --> J[Edit with AI]
+    J --> F
+    G --> K[Save to Collection]
+```
+
+## Tech Stack
+
+- **Flutter** - Native mobile app shell
+- **Firebase AI (Gemini)** - AI model for spec and code generation
+- **InAppWebView** - Renders generated web apps
+- **Tailwind CSS + daisyUI 5** - Styling framework for generated apps (dark theme, responsive, accessible)
+- **CDN-based dependencies** - React, Babel, and other libraries loaded via CDN
 
 ## Usage
-- **Provide an API key** for Gemini AI when launching the app.
-- **Enter a prompt** describing the app you want to generate.
-- **Wait for AI processing** to generate an optimized HTML-based application.
-- **View, edit, and save** the generated app.
-- **Access saved apps** from the bottom navigation bar without reusing AI tokens.
+1. **Enter a prompt** describing the app you want to generate
+2. **Review the spec** — edit data models, UI layout, or features as needed
+3. **Approve the spec** to trigger code generation
+4. **Preview the app** in the built-in browser
+5. **Monitor the console** for any runtime errors
+6. **Edit with AI** using natural language instructions
+7. **Save to collection** for offline access
+
+
+> **This is not a one-click app-building solution but more like an AI-based mobile IDE, providing a workspace for generating and refining applications.**
 
 ## Limitations
-- **Complex Applications**: Cannot build sophisticated apps requiring multi-user interactions (e.g., marketplaces) or complex state management.
-- **No SVG Support**: Apps that rely on SVG rendering (such as games) may not work properly.
-- **Limited AI Accuracy**: Due to using Google Gemini AI (a budget-friendly option), results may sometimes be inaccurate.
-- **Bug Handling**: AI-generated code may include errors that require manual debugging.
-- **Browser-Based Execution**: Only supports features available in a browser environment.
-- **CDN-Only Dependencies**: Cannot use npm packages, limiting available libraries and functionalities.
+- **Complex Applications**: Cannot build sophisticated apps requiring multi-user interactions (e.g., marketplaces) or complex backends
+- **No SVG Support**: Apps that rely on SVG rendering (such as games) may not work properly
+- **AI Accuracy**: Results may sometimes be inaccurate and require spec edits or manual fixes
+- **Browser-Based Execution**: Only supports features available in a browser environment
+- **CDN-Only Dependencies**: Cannot use npm packages, limiting available libraries
 
 ## How to Contribute
 1. **Fork the Repository**: Start by forking the project on GitHub.
@@ -71,4 +91,3 @@ YourApp is an AI-powered **mobile IDE and application builder** that allows user
 
 ## License
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
-
