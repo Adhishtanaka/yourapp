@@ -356,37 +356,6 @@ Response format: "This app [what it does]"
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  setState(() {
-                    if (_isEditingSpec) {
-                      _specContent = _specEditController.text;
-                    }
-                    _isEditingSpec = !_isEditingSpec;
-                  });
-                },
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: _isEditingSpec
-                        ? AppColors.accentBlue.withValues(alpha: 0.15)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                  child: Text(
-                    _isEditingSpec ? 'preview' : 'edit',
-                    style: AppTextStyles.monoSmall.copyWith(
-                      color: _isEditingSpec
-                          ? AppColors.accentBlue
-                          : AppColors.textMuted,
-                      fontSize: 10,
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
         ),

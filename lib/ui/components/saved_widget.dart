@@ -29,6 +29,9 @@ class SavedWidgetState extends State<SavedWidget> {
   void initState() {
     super.initState();
     _controller = TextEditingController();
+    _controller.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
@@ -56,25 +59,57 @@ class SavedWidgetState extends State<SavedWidget> {
       }
     });
 
-    final newHtmlCode = await gemini.editCode(widget.html, _controller.text);
-    _controller.clear();
+    try {
+      final newHtmlCode = await gemini.editCode(widget.html, _controller.text);
+      _controller.clear();
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    setState(() {
-      _isLoading = false;
-    });
+      setState(() {
+        _isLoading = false;
+      });
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BrowserUI(
-          html: newHtmlCode!,
-          bottomWidget: SavedWidget(
-              prompt: widget.prompt, html: newHtmlCode, spec: widget.spec),
+      if (newHtmlCode == null || newHtmlCode.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to apply changes',
+                style: AppTextStyles.caption.copyWith(color: Colors.white)),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+            margin: const EdgeInsets.all(12),
+          ),
+        );
+        return;
+      }
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BrowserUI(
+            html: newHtmlCode,
+            bottomWidget: SavedWidget(
+                prompt: widget.prompt, html: newHtmlCode, spec: widget.spec),
+          ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}',
+              style: AppTextStyles.caption.copyWith(color: Colors.white)),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          margin: const EdgeInsets.all(12),
+        ),
+      );
+    }
   }
 
   @override

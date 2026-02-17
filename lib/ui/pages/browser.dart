@@ -67,13 +67,19 @@ class BrowserUIState extends State<BrowserUI> {
       });
     });
 
-    if (type == 'consoleError') {
-      _showErrorDialog(type, message);
-    }
+    // Errors are collected silently - user can view all in console panel
   }
 
-  void _showErrorDialog(String type, String message) {
-    final isError = type == 'consoleError';
+  List<String> _getAllErrors() {
+    return consoleLogs
+        .where((log) => log['type'] == 'consoleError')
+        .map((log) => log['message'] as String)
+        .toList();
+  }
+
+  void _showAllErrorsDialog() {
+    final errors = _getAllErrors();
+    if (errors.isEmpty) return;
 
     showDialog(
       context: context,
@@ -96,46 +102,59 @@ class BrowserUIState extends State<BrowserUI> {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: isError
-                            ? AppColors.errorLight
-                            : AppColors.successLight,
+                        color: AppColors.errorLight,
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: Icon(
-                        isError
-                            ? Icons.error_outline
-                            : Icons.warning_amber_rounded,
-                        color: isError ? AppColors.error : AppColors.success,
+                      child: const Icon(
+                        Icons.error_outline,
+                        color: AppColors.error,
                         size: 18,
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        isError ? 'Console Error' : 'Console Warning',
+                        '${errors.length} Console Error${errors.length > 1 ? 's' : ''}',
                         style: AppTextStyles.h3.copyWith(
-                          color: isError ? AppColors.error : AppColors.success,
+                          color: AppColors.error,
                         ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppColors.background,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Text(
-                    message,
-                    style: AppTextStyles.monoSmall.copyWith(
-                      color: AppColors.textSecondary,
-                      fontSize: 11,
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 200),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: errors
+                          .asMap()
+                          .entries
+                          .map((entry) => Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(10),
+                                margin: EdgeInsets.only(
+                                    bottom: entry.key < errors.length - 1
+                                        ? 8
+                                        : 0),
+                                decoration: BoxDecoration(
+                                  color: AppColors.background,
+                                  borderRadius: BorderRadius.circular(4),
+                                  border:
+                                      Border.all(color: AppColors.border),
+                                ),
+                                child: Text(
+                                  entry.value,
+                                  style: AppTextStyles.monoSmall.copyWith(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 11,
+                                  ),
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ))
+                          .toList(),
                     ),
-                    maxLines: 5,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 if (_isFixing) ...[
@@ -158,7 +177,7 @@ class BrowserUIState extends State<BrowserUI> {
                         ),
                         const SizedBox(width: 10),
                         Text(
-                          'Fixing with AI...',
+                          'Fixing all errors with AI...',
                           style: AppTextStyles.monoSmall.copyWith(
                             color: AppColors.accentBlue,
                             fontSize: 12,
@@ -193,7 +212,7 @@ class BrowserUIState extends State<BrowserUI> {
                         Expanded(
                           child: Text(
                             _fixingError!.isEmpty
-                                ? 'Code fixed and reloaded!'
+                                ? 'All errors fixed and reloaded!'
                                 : _fixingError!,
                             style: AppTextStyles.monoSmall.copyWith(
                               color: _fixingError!.isEmpty
@@ -238,7 +257,8 @@ class BrowserUIState extends State<BrowserUI> {
                         onPressed: _isFixing || _fixingComplete
                             ? null
                             : () {
-                                _fixWithAI(message, setDialogState);
+                                final allErrors = errors.join('\n---\n');
+                                _fixWithAI(allErrors, setDialogState);
                               },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.accentBlue,
@@ -259,7 +279,7 @@ class BrowserUIState extends State<BrowserUI> {
                                 ),
                               )
                             : Text(
-                                'Fix with AI',
+                                'Fix All with AI',
                                 style: AppTextStyles.button
                                     .copyWith(color: Colors.white),
                               ),
@@ -351,6 +371,11 @@ class BrowserUIState extends State<BrowserUI> {
       }
     }
 
+    if (setDialogState != null) {
+      setDialogState(() {
+        _isFixing = false;
+      });
+    }
     setState(() {
       _isFixing = false;
     });
@@ -391,16 +416,26 @@ class BrowserUIState extends State<BrowserUI> {
                   });
                 },
               ),
-              if (consoleLogs.isNotEmpty)
+              if (_getAllErrors().isNotEmpty)
                 Positioned(
-                  right: 8,
-                  top: 8,
+                  right: 6,
+                  top: 6,
                   child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 4, vertical: 1),
+                    decoration: BoxDecoration(
                       color: AppColors.error,
-                      shape: BoxShape.circle,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    constraints: const BoxConstraints(minWidth: 16),
+                    child: Text(
+                      '${_getAllErrors().length}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                 ),
@@ -885,6 +920,36 @@ class BrowserUIState extends State<BrowserUI> {
                   ),
                 ),
                 const Spacer(),
+                if (_getAllErrors().isNotEmpty)
+                  GestureDetector(
+                    onTap: () {
+                      _showAllErrorsDialog();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppColors.error.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.error_outline,
+                              size: 12, color: AppColors.error),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${_getAllErrors().length} error${_getAllErrors().length > 1 ? 's' : ''}',
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.error,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                if (_getAllErrors().isNotEmpty) const SizedBox(width: 6),
                 Text(
                   '${consoleLogs.length} logs',
                   style: AppTextStyles.caption.copyWith(

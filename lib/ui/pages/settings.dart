@@ -5,7 +5,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:yourapp/ui/theme/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yourapp/ui/components/alert_dialog_widget.dart';
-import 'package:yourapp/ui/pages/user_apis.dart';
 import 'package:yourapp/utils/ai_operations.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -116,8 +115,6 @@ class SettingsPageState extends State<SettingsPage> {
             _buildApiCard(),
             const SizedBox(height: 6),
             _buildModelCard(),
-            const SizedBox(height: 6),
-            _buildUserApisCard(),
             const SizedBox(height: 16),
             _buildSectionTitle('Data'),
             const SizedBox(height: 6),
@@ -329,64 +326,6 @@ class SettingsPageState extends State<SettingsPage> {
               }),
               const SizedBox(height: 8),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildUserApisCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: AppColors.border, width: 1),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const UserApisPage(),
-              ),
-            );
-          },
-          borderRadius: BorderRadius.circular(4),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceVariant,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Icon(
-                    Icons.api_rounded,
-                    color: AppColors.accentBlue,
-                    size: 18,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'User APIs',
-                    style: AppTextStyles.body.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                const Icon(
-                  Icons.chevron_right,
-                  color: AppColors.textMuted,
-                  size: 16,
-                ),
-              ],
-            ),
           ),
         ),
       ),

@@ -1,6 +1,5 @@
 import 'package:firebase_ai/firebase_ai.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yourapp/utils/api_tester_helper.dart';
 
 class AIOperations {
   late final GenerativeModel model;
@@ -33,9 +32,9 @@ class AIOperations {
 I am an expert JavaScript/React debugging specialist with deep knowledge of React, Tailwind CSS, and browser APIs. I analyze runtime errors, identify root causes, and provide complete working solutions while maintaining the original application architecture and functionality.
 
 TASK:
-Fix the JavaScript/React runtime error in the provided code. Identify the exact cause of the error and provide a complete working solution.
+Fix ALL the JavaScript/React runtime errors in the provided code. Identify the exact cause of each error and provide a complete working solution that resolves all of them.
 
-ERROR DETAILS:
+ERROR DETAILS (may contain multiple errors):
 $error
 
 CURRENT CODE:
@@ -150,15 +149,29 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     - Visual progress tracking with percentage indicators
     - LocalStorage persistence for task data (ALL features must be fully functional with real data persistence)
 
+    ===DATA MODEL===
+    Task:
+    - id: number (unique, auto-generated timestamp)
+    - title: string (required)
+    - subject: string (selected from predefined list)
+    - deadline: string (datetime-local format)
+    - progress: number (0-100)
+    - completed: boolean (default false)
+
+    Storage:
+    - LocalStorage key: "tasks" → JSON array of Task objects
+    - No backend required - all data persisted client-side
+
     ===UI DESIGN===
     Layout:
     - Mobile-first responsive design optimized for phone screens
     - Clean, distraction-free single-page layout
     - NO app bar/top bar - use bottom navigation bar only with 3-5 main sections (NEVER use sidebars)
-    - Floating Action Button for primary actions
+    - NO Floating Action Buttons (FAB) - use bottom nav buttons or inline "Add" buttons instead
+    - Primary actions (add, create) should be a dedicated bottom nav tab or an inline button at the top of the content area
     - Card-based content with touch-friendly tap targets (minimum 44px)
     - Scrollable content areas with proper spacing
-    
+
     Color Scheme (daisyUI dark theme):
     - Background: #1F2937 (dark gray)
     - Surface: #374151 (lighter gray)
@@ -169,7 +182,7 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     - Success: #22C55E (green)
     - Warning: #EAB308 (yellow)
     - Error: #EF4444 (red)
-    
+
     Components:
     - Bottom Navigation Bar with icons and labels for main sections
     - Subject filter chips with active state indicators
@@ -183,14 +196,15 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     - Large, touch-friendly form inputs
     - Mobile-optimized buttons and interactive elements
 
-    ===USER FLOWS===
+    ===UI FLOW===
     1. Navigation:
        - Tap bottom nav items to switch between main sections
        - Smooth transitions between views
        - Active section clearly indicated
 
     2. Task Creation:
-       - Tap FAB → Full-screen form opens
+       - Tap "Add" tab in bottom nav or inline "Add" button at top of list
+       - Full-screen modal slides down from top
        - Fill task details with mobile keyboard support
        - Select subject from dropdown
        - Set deadline using native date/time picker
@@ -207,17 +221,19 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     RESPONSE RULES:
     1. Validate input against rules first
     2. For invalid inputs, respond only with "no"
-    3. For valid inputs, follow exact format above
-    4. Design for MOBILE-FIRST: NO app bar/top bar, use bottom navigation only, NO sidebars
-    5. All features must be FULLY FUNCTIONAL with real data (NO mock data)
-    6. Ensure all UI elements follow daisyUI mobile guidelines
-    7. All interactive elements must have touch-friendly sizes (44px minimum)
-    8. Include proper mobile gestures and interactions
-    9. No explanations or comments in output
-    10. Use daisyUI dark theme colors specified above
-    11. Keep navigation simple - bottom nav with 3-5 items maximum
-    12. Only add features you are CONFIDENT can be implemented - do NOT add features that are uncertain or impossible (e.g., background running, call tracking, real-time GPS tracking of other users, etc.)
-    13. Do NOT include hardcoded items or mock data - all data must come from user input or real APIs
+    3. For valid inputs, follow exact format above with ALL sections: ===CORE FEATURES===, ===DATA MODEL===, ===UI DESIGN===, and ===UI FLOW===
+    4. ===DATA MODEL=== must define all entities, their fields with types, relationships, and storage strategy (LocalStorage keys, IndexedDB stores, etc.)
+    5. ===UI FLOW=== must describe step-by-step user interactions for every core feature (what the user taps, what happens, what they see next)
+    6. Design for MOBILE-FIRST: NO app bar/top bar, use bottom navigation only, NO sidebars
+    7. All features must be FULLY FUNCTIONAL with real data (NO mock data)
+    8. Ensure all UI elements follow daisyUI mobile guidelines
+    9. All interactive elements must have touch-friendly sizes (44px minimum)
+    10. Include proper mobile gestures and interactions
+    11. No explanations or comments in output
+    12. Use daisyUI dark theme colors specified above
+    13. Keep navigation simple - bottom nav with 3-5 items maximum
+    14. Only add features you are CONFIDENT can be implemented - do NOT add features that are uncertain or impossible (e.g., background running, call tracking, real-time GPS tracking of other users, etc.)
+    15. Do NOT include hardcoded items or mock data - all data must come from user input or real APIs
     ''';
 
     final content = [Content.text(fullPrompt)];
@@ -236,9 +252,11 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     - MOBILE-FIRST DESIGN: Optimize for phone screens, touch interactions
     - NO APP BAR/TOP BAR: Use bottom navigation bar only - no top app bars needed
     - BOTTOM NAVIGATION ONLY: Never use sidebars or desktop-style navigation
+    - NO FLOATING ACTION BUTTONS (FAB): NEVER use fixed/floating circular buttons. Use bottom nav "Add" tab or inline buttons instead
     - NO MOCK DATA: All features must work with real LocalStorage/IndexedDB
     - FULLY FUNCTIONAL: Every feature must work correctly, no placeholders
     - TOUCH-OPTIMIZED: All buttons/inputs minimum 44px, proper spacing
+    - MODALS: Always slide from TOP with slide-down animation, use items-start and pt-4 positioning
     
     WEBAPP UI THEME - USE daisyUI FROM CDN:
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
@@ -270,7 +288,7 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     Layout:
     - Mobile-first responsive design for phone screens
     - NO app bar/top bar - bottom navigation bar only with main sections
-    - Floating Action Button for task creation
+    - NO Floating Action Buttons (FAB) - use bottom nav "Add" tab or inline buttons instead
     - Card-based task list with large touch targets
     
     Color Scheme (daisyUI night theme):
@@ -291,8 +309,8 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     
     ===USER FLOWS===
     1. Task Creation:
-       - Tap FAB → Fill task details → Select subject
-       - Set priority → Add deadline → Confirm (with haptic feedback)
+       - Tap "Add" tab in bottom nav → Full-screen modal slides from top → Fill task details → Select subject
+       - Set priority → Add deadline → Confirm
        - View task in relevant category
 
     2. Task Management:
@@ -531,15 +549,6 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
                    </div>
                  )}
    
-                 <button
-                   onClick={() => setShowTaskModal(true)}
-                   className="btn btn-primary btn-circle fixed right-6 bottom-24 shadow-lg"
-                 >
-                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                   </svg>
-                 </button>
-   
                  {showTaskModal && (
                    <div
                      className="fixed inset-0 bg-black/50 flex items-start justify-center pt-4 z-50"
@@ -664,6 +673,12 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
                    </svg>
                    <span className="btm-nav-label">Tasks</span>
                  </button>
+                 <button onClick={() => setShowTaskModal(true)} className="text-base-content/50">
+                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                   </svg>
+                   <span className="btm-nav-label">Add</span>
+                 </button>
                  <button className="text-base-content/50">
                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -694,7 +709,8 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     2. MUST use daisyUI from CDN as shown above - include themes.css and daisyui@5 CSS
     3. MUST use data-theme="night" or other daisyUI dark theme
     4. MOBILE-FIRST: Design for phone screens first, NO app bar/top bar, use bottom navigation only (NEVER sidebars)
-    5. ALL FEATURES FULLY FUNCTIONAL: No mock data, use LocalStorage/IndexedDB for persistence
+    5. NO FLOATING ACTION BUTTONS (FAB): NEVER use btn-circle fixed/floating buttons. Primary actions go in bottom nav as an "Add" tab or as inline buttons at the top of content
+    6. ALL FEATURES FULLY FUNCTIONAL: No mock data, use LocalStorage/IndexedDB for persistence
     6. Implement all core features from the system design completely
     7. Use daisyUI components (btn, card, input, progress, btm-nav, modal, etc.)
     8. NO TODO COMMENTS: Every feature must be fully implemented and working
@@ -1137,80 +1153,4 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     return response.text;
   }
 
-  Future<String> validateAndAddApiToSpec({
-    required String url,
-    required String method,
-    String? body,
-    required String currentSpec,
-  }) async {
-    final apiTester = ApiTesterHelper();
-
-    final result = await apiTester.validateApiAgainstSpec(
-      url: url,
-      method: method,
-      body: body,
-      specContent: currentSpec,
-    );
-
-    if (!result.valid) {
-      return 'API_VALIDATION_FAILED: ${result.message}';
-    }
-
-    return currentSpec + result.toSpecAddition();
-  }
-
-  Future<Map<String, dynamic>?> testApiWithRetry({
-    required String url,
-    required String method,
-    String? body,
-  }) async {
-    final apiTester = ApiTesterHelper();
-
-    final result = await apiTester.testApi(
-      url: url,
-      method: method,
-      body: body,
-    );
-
-    if (result.success) {
-      return {
-        'success': true,
-        'statusCode': result.statusCode,
-        'responseData': result.responseData,
-        'responseTime': result.responseTime?.inMilliseconds,
-      };
-    } else {
-      return {
-        'success': false,
-        'error': result.error,
-        'attempts': result.attempts,
-      };
-    }
-  }
-
-  static String get apiTestingPrompt => '''
-API TESTING AND VALIDATION:
-When the user asks to create an app that requires API integration, follow these steps:
-1. First, analyze the spec to identify required API endpoints
-2. If the user provides API URLs, use the ApiTesterHelper to validate them
-3. The helper class will automatically retry up to 3 times if the API fails
-4. If API is valid, extract and add the following to the spec:
-   - API Structure (REST, GraphQL, etc.)
-   - API Type (authentication, paginated, search, standard, list)
-   - Input Schema (required parameters)
-   - Output Schema (response format)
-   - URLs used
-5. If API fails after 3 retries, inform the user that the AI API validation failed
-6. The API tester can be used as a function call for programmatic validation
-
-Example usage:
-final result = await apiTester.validateApiAgainstSpec(
-  url: 'https://api.example.com/users',
-  method: 'GET',
-  specContent: currentSpec,
-);
-
-If result.valid is true, use result.toSpecAddition() to add the API details to the spec.
-If result.valid is false, inform the user about the failure.
-''';
 }
