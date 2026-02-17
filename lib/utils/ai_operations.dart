@@ -1,6 +1,53 @@
 import 'package:firebase_ai/firebase_ai.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+class AIException implements Exception {
+  final String userMessage;
+  final String? retryAfter;
+  final bool isRateLimit;
+
+  AIException(this.userMessage, {this.retryAfter, this.isRateLimit = false});
+
+  @override
+  String toString() => userMessage;
+
+  static AIException fromError(Object error) {
+    final msg = error.toString();
+
+    if (msg.contains('quota') || msg.contains('rate') || msg.contains('429')) {
+      final retryMatch = RegExp(r'retry in ([\d.]+)s').firstMatch(msg);
+      final retryAfter = retryMatch != null
+          ? '${double.parse(retryMatch.group(1)!).ceil()}s'
+          : null;
+      final retryText = retryAfter != null ? ' Retry in $retryAfter.' : '';
+      return AIException(
+        'Rate limit reached.$retryText',
+        retryAfter: retryAfter,
+        isRateLimit: true,
+      );
+    }
+
+    if (msg.contains('billing')) {
+      return AIException(
+        'API quota exceeded. Check your billing plan.',
+        isRateLimit: true,
+      );
+    }
+
+    if (msg.contains('network') ||
+        msg.contains('SocketException') ||
+        msg.contains('Connection')) {
+      return AIException('Network error. Check your connection.');
+    }
+
+    if (msg.contains('timeout') || msg.contains('Timeout')) {
+      return AIException('Request timed out. Try again.');
+    }
+
+    return AIException('AI generation failed. Try again.');
+  }
+}
+
 class AIOperations {
   late final GenerativeModel model;
   static const String defaultModel = 'gemini-2.5-flash';
@@ -121,9 +168,9 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     Generate a detailed mobile application specification based on the user's requirements.
 
     WEBAPP UI THEME REQUIREMENTS:
-    - Use daisyUI from CDN with black/white/shadcn-inspired design
-    - Primary theme: dark mode with dark gray (#1F2937) background, white text, and gray borders
-    - Accessible accent colors: Green (#22C55E) for success/safe, Yellow (#EAB308) for warning, Red (#EF4444) for error/danger
+    - Use daisyUI from CDN with data-theme="black" (pure black background, white text)
+    - Primary theme: black (#000000) background, white (#FFFFFF) text and accent, dark gray borders
+    - Accent colors: Blue (#3B82F6) for primary/info, Yellow (#EAB308) for warning, Red (#EF4444) for error/danger
     - Minimal, mobile-responsive design optimized for phone screens
     - Clean, modern aesthetic with subtle shadows and rounded corners
     - All interactive elements must have sufficient color contrast (WCAG AA minimum)
@@ -174,13 +221,13 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     - Card-based content with touch-friendly tap targets (minimum 44px)
     - Scrollable content areas with proper spacing
 
-    Color Scheme (daisyUI dark theme):
-    - Background: #1F2937 (dark gray)
-    - Surface: #374151 (lighter gray)
-    - Primary Text: #F9FAFB (white)
+    Color Scheme (daisyUI black theme):
+    - Background: #000000 (black)
+    - Surface: #0A0A0A (near-black)
+    - Primary Text: #FFFFFF (white)
     - Secondary Text: #9CA3AF (gray)
-    - Border: #4B5563 (medium gray)
-    - Accent/Primary: #06B6D4 (cyan - daisyUI primary)
+    - Border: #2A2A2A (dark gray)
+    - Accent/Primary: #3B82F6 (blue)
     - Success: #22C55E (green)
     - Warning: #EAB308 (yellow)
     - Error: #EF4444 (red)
@@ -232,7 +279,7 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     9. All interactive elements must have touch-friendly sizes (44px minimum)
     10. Include proper mobile gestures and interactions
     11. No explanations or comments in output
-    12. Use daisyUI dark theme colors specified above
+    12. Use daisyUI "black" theme colors specified above (black background, white accent, blue/yellow/red)
     13. Keep navigation simple - bottom nav with 3-5 items maximum
     14. Only add features you are CONFIDENT can be implemented - do NOT add features that are uncertain or impossible (e.g., background running, call tracking, real-time GPS tracking of other users, etc.)
     15. Do NOT include hardcoded items or mock data - all data must come from user input or real APIs
@@ -265,17 +312,19 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     
-    IMPORTANT: Use daisyUI dark theme (cyberpunk or night) or custom dark theme:
-    <html data-theme="night">
-    
-    Color scheme for accessibility (green/yellow/red for status):
+    IMPORTANT: Use daisyUI "black" theme for pure black background with white text:
+    <html data-theme="black">
+
+    Color scheme:
+    - Background: #000000 (black)
+    - Surface: #0A0A0A (near-black)
+    - Primary Text: #FFFFFF (white)
+    - Secondary Text: #9CA3AF (gray)
+    - Border: #2A2A2A (dark gray)
+    - Accent/Primary: #3B82F6 (blue)
     - Success/Safe: #22C55E (green)
-    - Warning: #EAB308 (yellow)  
+    - Warning: #EAB308 (yellow)
     - Error/Danger: #EF4444 (red)
-    - Background: #1F2937 (dark gray)
-    - Surface: #374151 (lighter gray)
-    - Primary Text: #F9FAFB (white)
-    - Border: #4B5563 (medium gray)
     
     Use daisyUI 5 components: btn, card, input, swap, toggle, dock, fieldset, etc.
     CRITICAL daisyUI 5 CLASS CHANGES (do NOT use old daisyUI 4 classes):
@@ -299,9 +348,9 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     - NO Floating Action Buttons (FAB) - use bottom nav "Add" tab or inline buttons instead
     - Card-based task list with large touch targets
     
-    Color Scheme (daisyUI night theme):
-    - Use data-theme="night" for dark mode
-    - Success: #22C55E, Warning: #EAB308, Error: #EF4444
+    Color Scheme (daisyUI black theme):
+    - Use data-theme="black" for pure black mode
+    - Accent/Primary: #3B82F6 (blue), Success: #22C55E, Warning: #EAB308, Error: #EF4444
     
     Components:
     - Subject filter pills with active state indicators
@@ -328,7 +377,7 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
 
     EXAMPLE OUTPUT:
    <!DOCTYPE html>
-   <html lang="en" data-theme="night">
+   <html lang="en" data-theme="black">
      <head>
        <meta charset="UTF-8" />
        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -707,7 +756,7 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     RESPONSE RULES:
     1. Generate complete, production-ready HTML/React.js/daisyUI code
     2. MUST use daisyUI from CDN as shown above - include themes.css and daisyui@5 CSS
-    3. MUST use data-theme="night" or other daisyUI dark theme
+    3. MUST use data-theme="black" for pure black background with white text
     4. MOBILE-FIRST: Design for phone screens first, NO app bar/top bar, use bottom navigation only (NEVER sidebars)
     5. NO FLOATING ACTION BUTTONS (FAB): NEVER use btn-circle fixed/floating buttons. Primary actions go in bottom nav as an "Add" tab or as inline buttons at the top of content
     6. ALL FEATURES FULLY FUNCTIONAL: No mock data, use LocalStorage/IndexedDB for persistence
@@ -729,7 +778,7 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
     19. All interactive elements must have active: states for touch feedback
     20. For RSS feeds: Use rss2json.com API (https://api.rss2json.com/v1/api.json?rss_url=YOUR_RSS_URL)
     21. For external API calls: Prefer APIs with CORS support, implement loading states and error handling with retry buttons
-    22. COLOR ACCESSIBILITY: Use green (#22C55E) for success/safe, yellow (#EAB308) for warning, red (#EF4444) for error/danger
+    22. COLOR ACCESSIBILITY: Use blue (#3B82F6) for primary/info, green (#22C55E) for success/safe, yellow (#EAB308) for warning, red (#EF4444) for error/danger. White (#FFFFFF) as main accent on black backgrounds
     23. DEVICE STORAGE ACCESS: Your generated apps CAN access device storage! Use the global 'window.FileHandler' object:
         - window.FileHandler.pickFile(options) - Pick files from device. Options: {type: 'audio'|'video'|'image'|'any', multiple: false}
         - window.FileHandler.pickFiles(options) - Pick multiple files. Options: {type: 'audio'|'video'|'image'|'any', multiple: true}

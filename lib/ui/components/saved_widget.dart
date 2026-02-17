@@ -96,14 +96,17 @@ class SavedWidgetState extends State<SavedWidget> {
       );
     } catch (e) {
       if (!mounted) return;
+      final aiError = AIException.fromError(e);
       setState(() {
         _isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: ${e.toString()}',
+          content: Text(aiError.userMessage,
               style: AppTextStyles.caption.copyWith(color: Colors.white)),
-          backgroundColor: AppColors.error,
+          backgroundColor: aiError.isRateLimit
+              ? const Color(0xFFEAB308)
+              : AppColors.error,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
           margin: const EdgeInsets.all(12),

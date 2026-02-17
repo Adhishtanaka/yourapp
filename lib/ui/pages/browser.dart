@@ -358,15 +358,16 @@ class BrowserUIState extends State<BrowserUI> {
       }
     } catch (e) {
       if (mounted) {
+        final aiError = AIException.fromError(e);
         if (setDialogState != null) {
           setDialogState(() {
             _fixingComplete = true;
-            _fixingError = e.toString();
+            _fixingError = aiError.userMessage;
           });
         }
         setState(() {
           _fixingComplete = true;
-          _fixingError = e.toString();
+          _fixingError = aiError.userMessage;
         });
       }
     }

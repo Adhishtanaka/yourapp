@@ -70,25 +70,35 @@ class _HomeComponentState extends State<HomeComponent>
       isLoading = true;
     });
 
-    final spec = await gemini.getPrompt(controller.text);
+    try {
+      final spec = await gemini.getPrompt(controller.text);
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    if (spec == null) {
+      if (spec == null) {
+        setState(() {
+          _phase = 'idle';
+          isLoading = false;
+          _errorMessage = "Not a valid app idea. Try describing a mobile app.";
+        });
+        return;
+      }
+
+      setState(() {
+        _phase = 'reviewSpec';
+        _specContent = spec;
+        _specEditController.text = spec;
+        isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      final aiError = AIException.fromError(e);
       setState(() {
         _phase = 'idle';
         isLoading = false;
-        _errorMessage = "Not a valid app idea. Try describing a mobile app.";
+        _errorMessage = aiError.userMessage;
       });
-      return;
     }
-
-    setState(() {
-      _phase = 'reviewSpec';
-      _specContent = spec;
-      _specEditController.text = spec;
-      isLoading = false;
-    });
   }
 
   Future<void> _handleApproveSpec() async {
@@ -106,55 +116,65 @@ class _HomeComponentState extends State<HomeComponent>
       _aiFeedback = null;
     });
 
-    final htmlCode = await gemini.getCode(specToUse);
+    try {
+      final htmlCode = await gemini.getCode(specToUse);
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    if (htmlCode == null) {
+      if (htmlCode == null) {
+        setState(() {
+          _phase = 'reviewSpec';
+          isLoading = false;
+          _errorMessage = "Build failed. Edit spec and retry.";
+        });
+        return;
+      }
+
+      setState(() {
+        _isGettingFeedback = true;
+      });
+
+      final feedback = await _getCodeFeedback(specToUse);
+
+      if (!mounted) return;
+
+      setState(() {
+        _aiFeedback = feedback;
+        _isGettingFeedback = false;
+      });
+
+      HapticFeedback.heavyImpact();
+
+      final prompt = _userPrompt ?? controller.text;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BrowserUI(
+            html: htmlCode,
+            bottomWidget:
+                SavedWidget(prompt: prompt, html: htmlCode, spec: specToUse),
+          ),
+        ),
+      );
+
+      controller.clear();
+      setState(() {
+        _phase = 'idle';
+        _specContent = null;
+        _userPrompt = null;
+        _errorMessage = null;
+        _aiFeedback = null;
+        isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      final aiError = AIException.fromError(e);
       setState(() {
         _phase = 'reviewSpec';
         isLoading = false;
-        _errorMessage = "Build failed. Edit spec and retry.";
+        _errorMessage = aiError.userMessage;
       });
-      return;
     }
-
-    setState(() {
-      _isGettingFeedback = true;
-    });
-
-    final feedback = await _getCodeFeedback(specToUse);
-
-    if (!mounted) return;
-
-    setState(() {
-      _aiFeedback = feedback;
-      _isGettingFeedback = false;
-    });
-
-    HapticFeedback.heavyImpact();
-
-    final prompt = _userPrompt ?? controller.text;
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BrowserUI(
-          html: htmlCode,
-          bottomWidget:
-              SavedWidget(prompt: prompt, html: htmlCode, spec: specToUse),
-        ),
-      ),
-    );
-
-    controller.clear();
-    setState(() {
-      _phase = 'idle';
-      _specContent = null;
-      _userPrompt = null;
-      _errorMessage = null;
-      _aiFeedback = null;
-      isLoading = false;
-    });
   }
 
   Future<String> _getCodeFeedback(String spec) async {
@@ -196,25 +216,35 @@ Response format: "This app [what it does]"
       isLoading = true;
     });
 
-    final spec = await gemini.getPrompt(_userPrompt!);
+    try {
+      final spec = await gemini.getPrompt(_userPrompt!);
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    if (spec == null) {
+      if (spec == null) {
+        setState(() {
+          _phase = 'idle';
+          isLoading = false;
+          _errorMessage = "Failed to generate spec.";
+        });
+        return;
+      }
+
+      setState(() {
+        _phase = 'reviewSpec';
+        _specContent = spec;
+        _specEditController.text = spec;
+        isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      final aiError = AIException.fromError(e);
       setState(() {
         _phase = 'idle';
         isLoading = false;
-        _errorMessage = "Failed to generate spec.";
+        _errorMessage = aiError.userMessage;
       });
-      return;
     }
-
-    setState(() {
-      _phase = 'reviewSpec';
-      _specContent = spec;
-      _specEditController.text = spec;
-      isLoading = false;
-    });
   }
 
   @override

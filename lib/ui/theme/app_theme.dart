@@ -1,40 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Dark IDE color palette — VSCode-inspired neutral grays + navy blue accent
+/// Dark color palette — Black/dark gray base + white accent + blue/yellow/red
 class AppColors {
   // Core backgrounds
-  static const Color background = Color(0xFF1E1E1E);
-  static const Color surface = Color(0xFF252525);
-  static const Color surfaceVariant = Color(0xFF2D2D2D);
-  static const Color elevated = Color(0xFF333333);
+  static const Color background = Color(0xFF000000);
+  static const Color surface = Color(0xFF0A0A0A);
+  static const Color surfaceVariant = Color(0xFF141414);
+  static const Color elevated = Color(0xFF1A1A1A);
 
-  // Navy / Accent
-  static const Color navy = Color(0xFF1A2744);
-  static const Color navyLight = Color(0xFF1E3A5F);
-  static const Color navyDark = Color(0xFF0F172A);
-  static const Color accentBlue = Color.fromARGB(255, 5, 193, 193);
+  // Accent
+  static const Color navy = Color(0xFF0A0A0A);
+  static const Color navyLight = Color(0xFF141414);
+  static const Color navyDark = Color(0xFF000000);
+  static const Color accentBlue = Color(0xFF3B82F6);
 
   // Text
-  static const Color textPrimary = Color(0xFFD6D6D6);
-  static const Color textSecondary = Color(0xFF868686);
-  static const Color textMuted = Color(0xFF6C6C6C);
-  static const Color textOnDark = Color(0xFFF0F0F0);
+  static const Color textPrimary = Color(0xFFFFFFFF);
+  static const Color textSecondary = Color(0xFF9CA3AF);
+  static const Color textMuted = Color(0xFF6B7280);
+  static const Color textOnDark = Color(0xFFFFFFFF);
 
   // Border
-  static const Color border = Color(0xFF404040);
-  static const Color borderDark = Color(0xFF333333);
+  static const Color border = Color(0xFF2A2A2A);
+  static const Color borderDark = Color(0xFF1A1A1A);
 
   // Status
-  static const Color error = Color(0xFFF14C4C);
-  static const Color errorLight = Color(0xFF5A1D1D);
-  static const Color success = Color(0xFF4EC9B0);
-  static const Color successLight = Color(0xFF1C3D35);
+  static const Color error = Color(0xFFEF4444);
+  static const Color errorLight = Color(0xFF3B1111);
+  static const Color success = Color(0xFF22C55E);
+  static const Color successLight = Color(0xFF0D3320);
 
   // Compat aliases
-  static const Color slate = Color(0xFF3C3C3C);
-  static const Color slateLight = Color(0xFF4A4A4A);
-  static const Color slateMuted = Color(0xFF6C6C6C);
+  static const Color slate = Color(0xFF1F1F1F);
+  static const Color slateLight = Color(0xFF2A2A2A);
+  static const Color slateMuted = Color(0xFF6B7280);
 }
 
 /// App text styles — Montserrat for UI, Fira Code for code
