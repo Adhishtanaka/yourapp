@@ -28,6 +28,7 @@ class BrowserUIState extends State<BrowserUI> {
   String? _currentHtml;
   String? _fixingError;
   bool _fixingComplete = false;
+  bool _errorDialogAutoShown = false;
 
   String cleanHtml(String html) {
     return html.replaceAll('```html', '').replaceAll('```', '').trim();
@@ -59,15 +60,29 @@ class BrowserUIState extends State<BrowserUI> {
       type = 'consoleWarn';
     }
 
-    setState(() {
-      consoleLogs.add({
-        'type': type,
-        'message': message,
-        'timestamp': DateTime.now(),
-      });
+    // Mutate list directly to avoid rebuild on every message
+    consoleLogs.add({
+      'type': type,
+      'message': message,
+      'timestamp': DateTime.now(),
     });
 
-    // Errors are collected silently - user can view all in console panel
+    final isError = type == 'consoleError';
+
+    // Only rebuild when error badge needs updating or console panel is visible
+    if (isError || _showConsolePanel) {
+      setState(() {});
+    }
+
+    // Auto-show error dialog on first error after page load
+    if (isError && !_errorDialogAutoShown) {
+      _errorDialogAutoShown = true;
+      Future.delayed(const Duration(milliseconds: 800), () {
+        if (mounted && _getAllErrors().isNotEmpty) {
+          _showAllErrorsDialog();
+        }
+      });
+    }
   }
 
   List<String> _getAllErrors() {
@@ -522,6 +537,7 @@ class BrowserUIState extends State<BrowserUI> {
                     onLoadStart: (controller, url) {
                       setState(() {
                         isLoading = true;
+                        _errorDialogAutoShown = false;
                       });
                     },
                     onLoadStop: (controller, url) {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:firebase_ai/firebase_ai.dart';
 import 'package:yourapp/ui/theme/app_theme.dart';
 import 'package:yourapp/ui/pages/browser.dart';
 import 'package:yourapp/utils/ai_operations.dart';
@@ -29,8 +28,6 @@ class _HomeComponentState extends State<HomeComponent>
   late ScrollController _specScrollController;
   late TextEditingController _specEditController;
   bool _isEditingSpec = false;
-  String? _aiFeedback;
-  bool _isGettingFeedback = false;
 
   @override
   void initState() {
@@ -113,7 +110,6 @@ class _HomeComponentState extends State<HomeComponent>
       _specContent = specToUse;
       _isEditingSpec = false;
       isLoading = true;
-      _aiFeedback = null;
     });
 
     try {
@@ -129,19 +125,6 @@ class _HomeComponentState extends State<HomeComponent>
         });
         return;
       }
-
-      setState(() {
-        _isGettingFeedback = true;
-      });
-
-      final feedback = await _getCodeFeedback(specToUse);
-
-      if (!mounted) return;
-
-      setState(() {
-        _aiFeedback = feedback;
-        _isGettingFeedback = false;
-      });
 
       HapticFeedback.heavyImpact();
 
@@ -163,7 +146,6 @@ class _HomeComponentState extends State<HomeComponent>
         _specContent = null;
         _userPrompt = null;
         _errorMessage = null;
-        _aiFeedback = null;
         isLoading = false;
       });
     } catch (e) {
@@ -174,23 +156,6 @@ class _HomeComponentState extends State<HomeComponent>
         isLoading = false;
         _errorMessage = aiError.userMessage;
       });
-    }
-  }
-
-  Future<String> _getCodeFeedback(String spec) async {
-    try {
-      final feedbackPrompt = '''
-You are generating a mobile app. Briefly explain what this app will do in 1-2 sentences based on the spec:
-
-$spec
-
-Response format: "This app [what it does]"
-''';
-      final content = [Content.text(feedbackPrompt)];
-      final response = await gemini.model.generateContent(content);
-      return response.text?.trim() ?? 'Building your app...';
-    } catch (e) {
-      return 'Building your app...';
     }
   }
 
@@ -564,7 +529,7 @@ Response format: "This app [what it does]"
           ),
           const SizedBox(height: 16),
           Text(
-            _isGettingFeedback ? 'analyzing...' : 'building...',
+            'building...',
             style: AppTextStyles.monoSmall.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -581,28 +546,6 @@ Response format: "This app [what it does]"
               ),
             ],
           ),
-          if (_aiFeedback != null) ...[
-            const SizedBox(height: 12),
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 24),
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: Text(
-                _aiFeedback!,
-                style: AppTextStyles.monoSmall.copyWith(
-                  color: AppColors.textSecondary,
-                  fontSize: 11,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
           const SizedBox(height: 16),
           SizedBox(
             width: 120,

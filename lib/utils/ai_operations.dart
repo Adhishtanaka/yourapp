@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_ai/firebase_ai.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -52,15 +54,21 @@ class AIOperations {
   late final GenerativeModel model;
   static const String defaultModel = 'gemini-2.5-flash';
   static const String modelKey = 'ai_model';
+  final _ready = Completer<void>();
 
   AIOperations() {
     _initialize();
   }
 
   Future<void> _initialize() async {
-    final prefs = await SharedPreferences.getInstance();
-    final modelName = prefs.getString(modelKey) ?? defaultModel;
-    model = FirebaseAI.googleAI().generativeModel(model: modelName);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final modelName = prefs.getString(modelKey) ?? defaultModel;
+      model = FirebaseAI.googleAI().generativeModel(model: modelName);
+      _ready.complete();
+    } catch (e) {
+      _ready.completeError(e);
+    }
   }
 
   Future<void> updateModel(String modelName) async {
@@ -75,6 +83,7 @@ class AIOperations {
   }
 
   Future<String?> fixError(String error, String code) async {
+    await _ready.future;
     final fixPrompt = '''
 I am an expert JavaScript/React debugging specialist with deep knowledge of React, Tailwind CSS, and browser APIs. I analyze runtime errors, identify root causes, and provide complete working solutions while maintaining the original application architecture and functionality.
 
@@ -161,6 +170,7 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
   }
 
   Future<String?> getPrompt(String prompt) async {
+    await _ready.future;
     final fullPrompt = '''
     I am the world's leading expert in mobile app design and system architecture, specializing in creating comprehensive mobile application blueprints. With extensive experience in mobile UI/UX design, accessibility standards, and daisyUI/Tailwind principles, I provide complete, production-ready specifications for mobile-first applications.
 
@@ -294,6 +304,7 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
   }
 
   Future<String?> getCode(String prompt) async {
+    await _ready.future;
     final fullPrompt = '''
     I am an expert mobile-first web application architect specializing in creating production-ready, touch-optimized, and performant mobile web applications. With mastery of React, daisyUI, Tailwind CSS, and mobile-first design principles, I deliver complete, fully-functional solutions optimized for mobile devices with NO mock data and ALL features working correctly.
 
@@ -808,6 +819,7 @@ IMPORTANT: Return ONLY the complete fixed HTML code without any markdown formatt
   }
 
   Future<String?> editCode(String html, String feature) async {
+    await _ready.future;
     final prompt = '''
     I am an expert code modification specialist focusing on enhancing and extending existing applications. I transform your change requests into complete, production-ready implementations while maintaining the original architecture, style, and best practices.
   
